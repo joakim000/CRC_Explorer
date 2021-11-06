@@ -6,7 +6,7 @@ Try these commands to get an overview.
 
 * `make`
 * `crc zoo`
-* `crc enc -m AB -c 17 -steps -noskip`
+* `crc enc -m A -c 29 -steps -noskip`
 * `scripts/test_perf.sh`
 * `crc help`
 
@@ -18,19 +18,50 @@ A frustrating experience to be sure, but an excellent lesson in the importance o
 
 ## Features
 
-### Validatable (it's a word) process
+### Validatable (it's a word)
 
-### Educational step-by-step output
+The simple algorithm and available outputs makes the process easy to validate manually, and provides confidence for validating other implementations in turn.
+
+### Educational output
+
+The process can be viewed step-by-step (with some options to lessen verbosity), giving a visual respresentation of how different generator polynomials and inital values affect the result. Sample output:
+
+ ![Sample step-by-step output](assets/ex_output_steps.png)
+
+Understanding how the long hand-method works is very helpful for understanding other methods, including the famous "SIMPLE" algorithm.
 
 ### Zoo
 
-### API for plug-in validation of other implemenations
+A library of CRC specifications is included for testing and as reference; sources are at the end of this document. 
+Edit `zoo.h` if the one you need is not listed.
+Viewing the Zoo simultaniously performs basic check value-testing of the selected engine for each specification - an easy first test after making a change.
 
-### Other features
+### API for plug-in validation of other implementations
 
-## Step-by-step
+See details further down. 
+
+### Validation and performance tests
+
+Facilities for validation and performance tests are included. The actual tests are fairly basic (described below); to extend this functionality edit the functions 
+`ImplValid` and `ImplPerf` respectively. 
+
+The currently included validation test performs 3 steps:
+1. Encode standard input, "123456789" - should match check value in library.
+2. Error check standard input using library check value - should return 0.
+3. Error check modified standard input - should return a non-zero result.
+
+The currently included performance test measures clock cycles while encoding randomized 8-bit numbers in 64 kiB, 1 MiB and 16 MiB streams. Results in seconds and MiB/s.
+
 
 ## External engine API
+
+To test your CRC implemenation, 
+1. add it into the `engine.c` definition of `GetRem` and 
+2. `#define CRC_EXPLORER_EXTERNAL` in `engine.h`.
+
+`GetRem` returns a remainder value from a CRC definition and a message input, compare declaration below. 
+
+When using this functionality, the command line option `-i` activates the internal engine for comparison.
 
 `engine.h` declaration of `GetRem`:
 ~~~c
@@ -68,5 +99,11 @@ A frustrating experience to be sure, but an excellent lesson in the importance o
 uint64_t GetRem(crc_t* crc, msg_t* msg, uint64_t check);
 ~~~
 
-## Additional
+## References
+
+The links below were very helpful for this project.
+
+https://crccalc.com/                                 
+http://srecord.sourceforge.net/crc16-ccitt.html       
+https://reveng.sourceforge.io/crc-catalogue/all.htm 
 
