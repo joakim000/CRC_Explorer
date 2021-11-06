@@ -202,7 +202,7 @@ uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output);
  * @param msg 
  * @return implTest_t 
  */
-implTest_t TestImplemenation(crc_t* crc);
+implTest_t ImplValid(crc_t* crc);
 
 /**
  * @brief Performance tests
@@ -211,7 +211,7 @@ implTest_t TestImplemenation(crc_t* crc);
  * @param set_size 
  * @return implTest_t 
  */
-implTest_t PerfImplemenation(crc_t* crc, uint64_t set_size);
+implTest_t ImplPerf(crc_t* crc, uint64_t set_size);
 
 /**
  * @brief Custom value check 

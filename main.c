@@ -108,17 +108,17 @@ void main(int argc, char* argv[] )
     // The two tests may be run within one execution    
     // Commmand: Test implementation
     if (ca.impl_test) {
-        TestImplemenation(crc);
+        ImplValid(crc);
 
         if (!ca.perf_test)
             exit(EXIT_SUCCESS);
     }
     // Commmand: Test implementation
     if (ca.perf_test) {
-        PerfImplemenation(crc, 0x10000);
-        PerfImplemenation(crc, 0x100000);
-        PerfImplemenation(crc, 0x1000000);
-        // PerfImplemenation(crc, 0x8000000);
+        ImplPerf(crc, 0x10000);
+        ImplPerf(crc, 0x100000);
+        ImplPerf(crc, 0x1000000);
+        // ImplPerf(crc, 0x8000000);
 
         exit(EXIT_SUCCESS);
     }

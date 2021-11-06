@@ -261,7 +261,7 @@ void ZooTour(crcdef_t zoo[], size_t zoo_size) {
 /** end CRC specification control ***********************************************/
 
 /** Testing *********************************************************************/
-implTest_t TestImplemenation(crc_t* crc) {
+implTest_t ImplValid(crc_t* crc) {
     implTest_t test;
     uint64_t res;
 
@@ -280,7 +280,7 @@ implTest_t TestImplemenation(crc_t* crc) {
 
 }
 
-implTest_t PerfImplemenation(crc_t* crc, uint64_t set_size) {
+implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
     implTest_t test;
     uint64_t res;
 
