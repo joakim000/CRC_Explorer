@@ -67,8 +67,8 @@
            crc val -s 33 -in message.txt -c 0xABC\n\
 \n\
 \e[1;4mDo more\e[m\n\
-  Edit crc_zoo.c to add more / custom CRC specifications\n\
-  Validate and benchmark your own CRC implementation - see README\n\n"
+  Edit zoo.h to add custom CRC specifications.\n\
+  Validate and benchmark your own CRC implementation - see README.\n\n"
 
 
 /** Data structures **********************************************************/
