@@ -212,7 +212,8 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
         char* prt_refIn = crc->inputLSF ? "X" : " "; 
         char* prt_refOut = crc->resultLSF ? "X" : " "; 
         printf("\e[1;1m%-18s\e[m ", crc->description);
-        printf("%#18llX   %-3s %#18s   %-3s ",  crc->g, prt_il1, prt_init, prt_nondirect);
+        printf("%#18llX   %#18s   %-3s",  crc->g, prt_init, prt_nondirect);
+        // printf("%#18llX   %-3s %#18s   %-3s ",  crc->g, prt_il1, prt_init, prt_nondirect); // With IL1
         printf("%#18s    %-2s    %-3s   ", prt_xor, prt_refIn, prt_refOut);
     }
     else {
@@ -249,7 +250,8 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
 }
 
 void ZooTour(crcdef_t zoo[], size_t zoo_size) {
-    printf("\e[1;3m\e[1;4m%5s %-18s %18s %4s %19s %4s   %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "IL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value              ");
+    printf("\e[1;3m\e[1;4m%5s %-18s %18s   %18s %4s %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value               ");
+    // printf("\e[1;3m\e[1;4m%5s %-18s %18s %4s %19s %4s   %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "IL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value              "); // Med IL1
     for (int i = 0; i < zoo_size; i++) {
         crc_t zooItem;
         printf("%5d ", i);
