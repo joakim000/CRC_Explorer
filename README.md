@@ -19,15 +19,15 @@ A frustrating experience to be sure, but an excellent lesson in the importance o
 
 ## Features
 
-# By-hand validatable process
+### By-hand validatable process
 
-# Educational step-by-step output
+### Educational step-by-step output
 
-# Zoo
+### Zoo
 
-# API for plug-in validation of other implemenations 
+### API for plug-in validation of other implemenations 
 
-# Other features
+### Other features
 
 ## Step-by-step, oh baby
 
