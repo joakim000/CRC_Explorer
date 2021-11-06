@@ -34,7 +34,7 @@ Understanding how the long hand-method works is very helpful for understanding o
 
 A library of CRC specifications is included for testing and as reference; sources are at the end of this document. 
 Edit `zoo.h` if the one you need is not listed.
-Viewing the Zoo simultaniously performs basic check value-testing of the selected engine for each specification - an easy first test after making a change.
+Viewing the Zoo simultaneously performs basic check value-testing of the selected engine for each specification - an easy first test after making a change.
 
 ### API for plug-in validation of other implementations
 
