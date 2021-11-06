@@ -22,7 +22,7 @@ extra : $(objects)
 	cc $(LFLAGS) -o crc $(objects)
 
 # Program
-main.o : main.c crc_zoo.c crc.h assets/zoo.h jlibc/common.h jlibc/binutils.h jlibc/cmdargs.h jlibc/datagenerator.h jlibc/files.h
+main.o : main.c crc.h assets/zoo.h jlibc/common.h jlibc/binutils.h jlibc/cmdargs.h jlibc/datagenerator.h jlibc/files.h
 	cc -c $(CFLAGS) main.c
 crc.o : crc.c crc.h engine.h jlibc/common.h jlibc/binutils.h 
 	cc -c $(CFLAGS) crc.c
