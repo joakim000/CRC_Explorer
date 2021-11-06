@@ -37,7 +37,7 @@ void ArrangeMsg(crc_t* crc, msg_t* msg) {
         if(PROG.verbose) { printf("\ninitpad: %d  ", msg->initPad);  printf("msgBits (initBits written to frontpad): "); i82p(msg->msgBits, msg->paddedBitLen, 0, 0, 1); }
     }
 
-    if (PROG.verbose) {printf("ArrangeMsg validation rem: %#llX", msg->validation_rem);}
+    if (PROG.verbose) {printf("ArrangeMsg validation rem: %#llX\n", msg->validation_rem);}
 
     if (msg->validation_rem != 0) {
     // Write check bits to padding
@@ -54,6 +54,10 @@ void ArrangeMsg(crc_t* crc, msg_t* msg) {
         else
             bitSlice(sizeof(msg->validation_rem) * BITSINBYTE - crc->n, crc->n, &(msg->remBits), 0, remBits);
 
+        // printf("         rem: %#llX\n", msg->validation_rem);
+        // printf("msg->remBits: "); i82p(msg->remBits, 64, 0, 0, 1); 
+        // printf("     remBits: "); i82p(remBits, crc->n, 0, 0, 1); 
+
         // Write 
         for (int i = msg->paddedBitLen - crc->n, j = 0; j < crc->n; i++, j++) 
             msg->msgBits[i] = remBits[j];
@@ -63,7 +67,7 @@ void ArrangeMsg(crc_t* crc, msg_t* msg) {
     }
 }
 
-uint64_t convertInit(uint64_t poly, uint64_t init, uint8_t width) {
+uint64_t ConvertInit(uint64_t poly, uint64_t init, uint8_t width) {
     uint64_t next = 2;
     for (int i = 1; i < width - 1; i++) next *= 2;  // pow() funkar inte under linux, saknar math.h
 
@@ -164,7 +168,7 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
 /** end Internal engine *********************************************************/
 
 /** CRC specification control ***************************************************/
-void loadDef(crcdef_t zoo[], size_t index, crc_t* crc) {
+void LoadDef(crcdef_t zoo[], size_t index, crc_t* crc) {
         // 0 n   1 Gen    2 IL1  3 Init  4 Nondir. 5 RefIn 6 RefOut 7 XorOut   8 Residue 9 Check      10 "AB"
         strcpy((crc)->description, zoo[index].name);
         crc->n =         zoo[index].specs[0];
@@ -185,7 +189,7 @@ void loadDef(crcdef_t zoo[], size_t index, crc_t* crc) {
 
     // If needed, convert direct init to non-direct
     crc->init_conv = (crc->init && !crc->nondirect) ?
-        convertInit(crc->g, crc->init, crc->n) : crc->init;
+        ConvertInit(crc->g, crc->init, crc->n) : crc->init;
 
     // Convert init and final xor to array of bit values  
     int2bitsMSF(sizeof(crc->init_conv), &crc->init_conv, crc->initBits, 0 );    
@@ -193,8 +197,8 @@ void loadDef(crcdef_t zoo[], size_t index, crc_t* crc) {
 
 }
 
-void loadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
-    loadDef(zoo, index, crc);  
+void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
+    LoadDef(zoo, index, crc);  
     
     if (table) {
     // Oneline print for zoo-list
@@ -239,12 +243,12 @@ void loadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
     }
 }
 
-void zooTour(crcdef_t zoo[], size_t zoo_size) {
-    printf("\e[1;3m\e[1;4m%5s %16s %18s %18s %4s %18s %5s %6s %6s\e[m\n", "Index", "Spec", "Poly", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value");
+void ZooTour(crcdef_t zoo[], size_t zoo_size) {
+    printf("\e[1;3m\e[1;4m%5s %18s %18s %5s %18s %4s %18s %5s %6s %6s\e[m\n", "Index", "Spec", "Poly", "NoIL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value");
     for (int i = 0; i < zoo_size; i++) {
         crc_t zooItem;
         printf("%5d ", i);
-        loadDefWrapper(zoo, i, &zooItem, true);
+        LoadDefWrapper(zoo, i, &zooItem, true);
     }
 }
 /** end CRC specification control ***********************************************/
@@ -331,6 +335,25 @@ uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
     // Return result
     return test_msg->rem;
 }
+
+bool CustomValueCheck(crc_t* crc, msg_t* msg) {
+        if ( msg->expected && (msg->rem != msg->expected || PROG.verbose) ) {
+            printf("Expected:\t%#llX\n", msg->expected);
+            if (PROG.verbose) {                                   // Print bits of result and expected for analysis
+                uint8_t checksumBits[sizeof(msg->rem) * 8];
+                int2bitsMSF(sizeof(msg->rem), &msg->rem, checksumBits, false);
+                printBits("Checksum", checksumBits, COUNT_OF(checksumBits), crc->n);
+                uint8_t expectedBits[sizeof(msg->expected) * 8];
+                int2bitsMSF(sizeof(msg->expected), &msg->expected, expectedBits, false);
+                printBits("Expected", expectedBits, COUNT_OF(expectedBits), crc->n);
+            }
+            msg->rem == msg->expected ?
+                printf("\e[1;32m%s\e[m\n", "Checksum matches expected value.") :  // green
+                printf("\e[1;31m%s\e[m\n", "Checksum does not match expected value."); // red
+        }
+        bool pass = msg->rem == msg->expected ? true : false;
+        return pass;
+}
 /** end Testing *****************************************************************/
 
 
@@ -352,13 +375,13 @@ msg_t* PrepareMsg(crc_t* crc, char* message) {
         return r;
 }
 
-bool validate(crc_t* crc, msg_t* msg) {
+bool Validate(crc_t* crc, msg_t* msg) {
 
     if (PROG.verbose) printf("Remainder: %#llX\n", msg->rem);
     return msg->rem == 0 ? true : false;
 }
 
-void validPrint(uint8_t msg[], size_t msgSize, bool valid) {
+void ValidPrint(uint8_t msg[], size_t msgSize, bool valid) {
     if (PRINTMSG) {
         // char msgStr[msgSize + 1];
         // charArrayToString(msg, msgSize, msgStr);
@@ -376,7 +399,7 @@ void validPrint(uint8_t msg[], size_t msgSize, bool valid) {
 //  uint64_t encode(char* msg, int crcIndex) {
 //  }
 
-//  bool validate(char* msg, int crcIndex, uint64_t check) {
+//  bool Validate(char* msg, int crcIndex, uint64_t check) {
 //  }
 
 static short allocCheck(void* p) {

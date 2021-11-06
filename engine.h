@@ -1,5 +1,6 @@
 /** Engine for CRC Explorer ******************************************
   @brief API for validating CRC implementations
+
   1. Uncomment the line
      #define CRC_EXPLORER_EXTERNAL
   2. Put your implementation inside the function GetRem (engine.c). 
@@ -21,39 +22,38 @@ typedef struct crc_s crc_t;
 typedef struct msg_s msg_t;
 
 /**
-  @brief Get remainder from CRC calculation
-  @return The remainder
-  @param  crc_t*   crc    A CRC definition
-  @param  msg_t*   msg    A message to process
-  @param  uint64_t check  0; return CRC value for msg 
-                          CRC value; return 0 for unchanged msg 
-
-  @note   These are the fields of crc and msg
-          you certainly will need:
-
-          msg->
-            msgStr     Message as string 
-            len        Character-count excluding \0
-          
-          crc->
-            n          Bit width 
-            g          Generator polynomial
-            il1        Generator polynomial has Implicit leading 1. 
-                        Generally true, but provided because exceptions
-                        do exist (example: CRC-15/CAN).
-            init       Initial CRC value, also known as seed.
-            nondirect  Init can be "direct" or "non-direct".
-                        Generally false, but provided because exceptions
-                        do exist (example: CRC-16/CCITT).
-            inputLSF   Input reflected; message bytes are encoded LSF.
-            resultLSF  Result reflected; result is encoded LSF.
-                        Note, reflection is over whole value, not per byte. 
-            xor        Final XOR; XOR result with this value after calculation
-                        is done, but before result reflection (if any). 
-
-                Some additional fields are available
-                if you have use for them. See definitions
-                of crc_t and msg_t.
+*  @brief Get remainder from CRC calculation
+*  @return The remainder
+*  @param  crc_t*   crc    A CRC definition
+*  @param  msg_t*   msg    A message to process
+*  @param  uint64_t check  0; return CRC value for msg 
+*                          CRC value; return 0 for unchanged msg 
+*
+*  @note   Fields of crc and msg:
+*
+*          msg->
+*            msgStr     Message as string 
+*            len        Character-count excluding \0
+*          
+*          crc->
+*            n          Bit width 
+*            g          Generator polynomial
+*            il1        Generator polynomial has Implicit leading 1. 
+*                        Generally true, but provided because exceptions
+*                        do exist (example: CRC-15/CAN).
+*            init       Initial CRC value, also known as seed.
+*            nondirect  Init can be "direct" or "non-direct".
+*                        Generally false, but provided because exceptions
+*                        do exist (example: CRC-16/CCITT).
+*            inputLSF   Input reflected; message bytes are encoded LSF.
+*            resultLSF  Result reflected; result is encoded LSF.
+*                        Note, reflection is over whole value, not per byte. 
+*            xor        Final XOR; XOR result with this value after calculation
+*                        is done, but before result reflection (if any). 
+*
+*                Some additional fields are available
+*                if you have use for them. See definitions
+*                of crc_t and msg_t.
 */
 uint64_t GetRem(crc_t* crc, msg_t* msg, uint64_t check);
 

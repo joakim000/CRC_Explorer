@@ -92,7 +92,7 @@ void main(int argc, char* argv[] )
 
     // Commmand: Show CRC inventory
     if (ca.zoo) {
-        zooTour(zoo, COUNT_OF(zoo));
+        ZooTour(zoo, COUNT_OF(zoo));
         exit(EXIT_SUCCESS);
     }
 
@@ -100,7 +100,7 @@ void main(int argc, char* argv[] )
       // Load CRC definition 
         crc_t enc_crc;
         crc = &enc_crc;
-        loadDefWrapper(zoo, ca.crc_spec, &enc_crc, false); 
+        LoadDefWrapper(zoo, ca.crc_spec, &enc_crc, false); 
 
     // The two tests may be run within one execution    
     // Commmand: Test implementation
@@ -148,6 +148,7 @@ void main(int argc, char* argv[] )
         // If the message is "AB" an expected value is set matching the current CRC spec. 
         // Or set a custom value.  Check is skipped when set to 0. 
         msg->expected = strcmp(msg->msgStr, "AB") ? 0 : crc->checkAB; 
+        // msg->expected = 
 
         // Calculate remainder with engine pointed to, also start and stop timer
         timer_start = clock();
@@ -166,20 +167,7 @@ void main(int argc, char* argv[] )
         if (ca.timing) printf("%d chars in %5.3f seconds, %5.3f MiB/s.\n", msg->len, elapsed, msg->len / elapsed / 0x100000);
 
         // Compare result with a expected value
-        if ( msg->expected && (msg->rem != msg->expected || PROG.verbose) ) {
-            printf("Expected:\t%#llX\n", msg->expected);
-            if (PROG.verbose) {                                   // Print bits of result and expected for analysis
-                uint8_t checksumBits[sizeof(msg->rem) * 8];
-                int2bitsMSF(sizeof(msg->rem), &msg->rem, checksumBits, false);
-                printBits("Checksum", checksumBits, COUNT_OF(checksumBits), crc->n);
-                uint8_t expectedBits[sizeof(msg->expected) * 8];
-                int2bitsMSF(sizeof(msg->expected), &msg->expected, expectedBits, false);
-                printBits("Expected", expectedBits, COUNT_OF(expectedBits), crc->n);
-            }
-            msg->rem == msg->expected ?
-                printf("\e[1;32m%s\e[m\n", "Checksum matches expected value.") :  // green
-                printf("\e[1;31m%s\e[m\n", "Checksum does not match expected value."); // red
-        }
+        CustomValueCheck(crc, msg);
         
         // Open file for writing result      
         char csStr[100];
@@ -250,10 +238,10 @@ void main(int argc, char* argv[] )
 
         
         // Validate the messsage
-        msg->valid = validate(crc, msg);
+        msg->valid = Validate(crc, msg);
         
         // Print result        
-        validPrint(msg->msgStr, msg->len, msg->valid);
+        ValidPrint(msg->msgStr, msg->len, msg->valid);
 
         // Free allocations
         // if (msg->msgStr != (char*)ca.msg && msg->msgStr != NULL) free(msg->msgStr);    

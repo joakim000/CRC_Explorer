@@ -128,37 +128,7 @@ extern prog_t* prog;
 // #define  MSG (*msg)
 /** end Data structures ******************************************************/
 
-/** Framework ****************************************************************/
-/**
-  @brief Pointer to engine
-*/
-typedef uint64_t (*GetRem_ptr_t)(crc_t* crc, msg_t* msg, uint64_t check);
-extern GetRem_ptr_t GetRem_ptr;
 
-/**
-  @brief Prepare msg_t struct
-  @return  
-*/
-msg_t* PrepareMsg(crc_t* crc, char* message);
-
-/**
-  @brief Validate message
-  @return  
-*/
-bool validate(crc_t* crc, msg_t* msg);
-
-/**
-  @brief Print results of validation
-  @return  
-*/
-void validPrint(uint8_t msg[], size_t msgSize, bool valid);
-
-/**
-  @brief Allocation status check
-  @return  0: ok  1: NULL
-*/
-static short allocCheck(void* p);
-/** end Framework ************************************************************/
 
 /** Internal engine **********************************************************/
 /**
@@ -183,7 +153,7 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg);
   @brief Convert direct init value to non-direct
   @return  Converted value
 */
-uint64_t convertInit(uint64_t poly, uint64_t init, uint8_t width);
+uint64_t ConvertInit(uint64_t poly, uint64_t init, uint8_t width);
 /** end Internal engine ******************************************************/
 
 
@@ -192,19 +162,19 @@ uint64_t convertInit(uint64_t poly, uint64_t init, uint8_t width);
   @brief Load CRC definition
   @return  
 */
-void loadDef(crcdef_t zoo[], size_t index, crc_t* out);
+void LoadDef(crcdef_t zoo[], size_t index, crc_t* out);
 
 /**
-  @brief Wrapper for loadDef, prints info and performs value check test when loading 
+  @brief Wrapper for LoadDef, prints info and performs value check test when loading 
   @return  
 */
-void loadDefWrapper(crcdef_t zoo[], size_t index, crc_t* out, bool compact);
+void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* out, bool compact);
 
 /**
   @brief Print CRC inventory
   @return  
 */
-void zooTour(crcdef_t zoo[], size_t zoo_size);
+void ZooTour(crcdef_t zoo[], size_t zoo_size);
 /** end CRC specification control ********************************************/
 
 
@@ -223,7 +193,7 @@ void zooTour(crcdef_t zoo[], size_t zoo_size);
 uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output);
 
 /**
- * @brief Check value-test implementation scenarios
+ * @brief Additional scenarios tested with check value
  *        1. Encode => check value
  *        2. Validate with check value => 0
  *        3. Validate with changed message => !0
@@ -242,5 +212,43 @@ implTest_t TestImplemenation(crc_t* crc);
  * @return implTest_t 
  */
 implTest_t PerfImplemenation(crc_t* crc, uint64_t set_size);
+
+/**
+ * @brief Custom value check 
+ * @note  Checks message AB by default
+ * 
+ */
+bool CustomValueCheck(crc_t* crc, msg_t* msg);
 /** end Testing **************************************************************/
 
+/** Framework ****************************************************************/
+/**
+  @brief Pointer to engine
+*/
+typedef uint64_t (*GetRem_ptr_t)(crc_t* crc, msg_t* msg, uint64_t check);
+extern GetRem_ptr_t GetRem_ptr;
+
+/**
+  @brief Prepare msg_t struct
+  @return  
+*/
+msg_t* PrepareMsg(crc_t* crc, char* message);
+
+/**
+  @brief Validate message
+  @return  
+*/
+bool Validate(crc_t* crc, msg_t* msg);
+
+/**
+  @brief Print results of validation
+  @return  
+*/
+void ValidPrint(uint8_t msg[], size_t msgSize, bool valid);
+
+/**
+  @brief Allocation status check
+  @return  0: ok  1: NULL
+*/
+static short allocCheck(void* p);
+/** end Framework ************************************************************/
