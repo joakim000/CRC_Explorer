@@ -4,11 +4,11 @@
 
 Try these commands to get an overview.
 
-* make
-* crc zoo
-* crc enc -m AB -c 17 -steps -noskip
-* scripts/test_perf.sh
-* crc help
+* ~make~
+* ~crc zoo~
+* ~crc enc -m AB -c 17 -steps -noskip~
+* ~scripts/test_perf.sh~
+* ~crc help~
 
 ## Raison d'être
 
@@ -32,7 +32,7 @@ A frustrating experience to be sure, but an excellent lesson in the importance o
 
 ## External engine API
 
-engine.h declaration of GetRem:
+~engine.h~ declaration of ~GetRem~:
 ~~~c
 /**
 *  @brief  Get remainder from CRC calculation
