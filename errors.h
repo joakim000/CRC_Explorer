@@ -6,7 +6,6 @@
     "ABCD"         0x6531          0x5054
     "ABCDE"        0x3556          0x1AAB
     "Hello World!" 0xB35           0x6756
-    "Faroch"       0x2535          0x7056
 */
 
 // #define MATCH_EXAMPLES
