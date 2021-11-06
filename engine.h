@@ -63,7 +63,7 @@ uint64_t GetRem(crc_t* crc, msg_t* msg, uint64_t check);
 */
 typedef struct crc_s {
     /** Definition of a CRC *************************************************************/
-    uint8_t n;           // Bit width 
+    uint64_t n;          // Bit width 
     uint64_t g;          // Generator polynomial
     uint8_t il1;         // Generator polynomial has Implicit leading 1. 
                          //   Generally true, but provided because exceptions
