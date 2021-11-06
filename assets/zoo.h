@@ -77,7 +77,14 @@
 
  
 
+// Removed specs
+  // { "CRC-15/CAN*",       { 15,   0xC599,             0, 0x00,               0, 1, 0, 0x0000,             0,                  0x5136,             0x48B1,              }}, \
+  // { "CRC-16/DECT-X",     { 16,   0x0589,             1, 0x0000,             0, 0, 0, 0x0000,             0,                  0x007F,             0xF120,              }}, \
+  // { "CRC-A (n=16)",      { 16,   0x1021,             1, 0xC6C6,             0, 1, 1, 0x0000,             0,                  0xBF05,             0x2008,              }}, 
 
+
+
+/* Various references and notes */
 // http://can.marathon.ru/files/can2spec.pdf   CAN15
 // https://web.archive.org/web/20151017122935/http://www.bosch-semiconductors.de/media/pdf_1/canliteratur/can_fd_spec.pdf CAN17 / CAN21
 
@@ -124,6 +131,6 @@
 // width=64 poly=0x42f0e1eba9ea3693 init=0xffffffffffffffff refin=true refout=true xorout=0xffffffffffffffff check=0x995dc9bbdf1939fa residue=0x49958c9abd7d353f name="CRC-64/XZ"
 // width=64 poly=0x000000000000001b init=0xffffffffffffffff refin=true refout=true xorout=0xffffffffffffffff check=0xb90956c775a41001 residue=0x5300000000000000 name="CRC-64/GO-ISO"
 
-    // { "CRC-15/CAN*",       { 15,   0xC599,             0, 0x00,               0, 1, 0, 0x0000,             0,                  0x5136,             0x48B1,              }}, \
-    // { "CRC-16/DECT-X",     { 16,   0x0589,             1, 0x0000,             0, 0, 0, 0x0000,             0,                  0x007F,             0xF120,              }}, \
-    // { "CRC-A (n=16)",      { 16,   0x1021,             1, 0xC6C6,             0, 1, 1, 0x0000,             0,                  0xBF05,             0x2008,              }}, 
+  
+  
+  
