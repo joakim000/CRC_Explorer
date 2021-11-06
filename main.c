@@ -62,12 +62,12 @@ void main(int argc, char* argv[] )
         { .isFlag = true, .var = (bool*)&ca.use_internal_engine, .str = "-i" },       // Use internal engine even with external present
 
         // Custom spec
-        { .isInt = true,  .var = (int*)&ca.n, .str = "-n", .defaultInt = 8 },    // bit width
-        { .isInt = true,  .var = (int*)&ca.g, .str = "-g", .defaultInt = 0x07 }, // generator polynomial
-        { .isInt = true,  .var = (int*)&ca.init, .str = "-i", .defaultInt = 0 }, // init seed
-        { .isInt = true,  .var = (int*)&ca.xor, .str = "-x", .defaultInt = 0 },  // final xor
-        { .isFlag = true, .var = (bool*)&ca.refIn, .str = "-ri" },               // inRef
-        { .isFlag = true, .var = (bool*)&ca.refOut, .str = "-ro" },              // outRef
+        { .isInt = true,  .var = (int*)&ca.n, .str = "-n", .defaultInt = 8 },       // bit width
+        { .isInt = true,  .var = (int*)&ca.g, .str = "-g", .defaultInt = 0x07 },    // generator polynomial
+        { .isInt = true,  .var = (int*)&ca.init, .str = "-init", .defaultInt = 0 }, // init seed
+        { .isInt = true,  .var = (int*)&ca.xor, .str = "-x", .defaultInt = 0 },     // final xor
+        { .isFlag = true, .var = (bool*)&ca.refIn, .str = "-ri" },                  // inRef
+        { .isFlag = true, .var = (bool*)&ca.refOut, .str = "-ro" },                 // outRef
 
     };
     processArgs(argv, argc, defs, COUNT_OF(defs));
@@ -77,7 +77,7 @@ void main(int argc, char* argv[] )
     PROG.prt_noskip = ca.prt_noskip ? true : false;
     PROG.verbose =    ca.verbose    ? true : false;
     PROG.timing =     ca.timing     ? true : false;
-
+    
     PROG.internal_engine = (!EXTERNAL_ENGINE_AVAILABLE || ca.use_internal_engine) ? true : false;
     GetRem_ptr = PROG.internal_engine ? GetRemInternal : GetRem;
 
