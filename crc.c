@@ -122,7 +122,7 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
         int32_t space2 = crc->init ? msg->originalBitLen + msg->initPad  : msg->originalBitLen; 
         int separator = 0; int newLines = 1;
         // Content
-        printf("\n Before: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 34, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
+        printf("\n Before: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 0, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
         // for (; i < REMLOOPEND; i++)                       // Special accomodation, cf. error.h
         for (int i = 0; i < msg->originalBitLen + msg->initPad; i++)  // Standard loop ending condition
             if (msg->msgBits[i]) {
@@ -137,7 +137,7 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
                     i2pc(gSkip, gBits_size, separator, newLines, 90, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9); 
                 printf("Skip%3d: ", i); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 36, i, gBits_size, space1, space2, 0);
             }  
-        printf("  After: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 35, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
+        printf("  After: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 37, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
     } 
         
 
@@ -153,7 +153,13 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
         TOWIDTH(xorBits);
         for (int i = 0; i < COUNT_OF(remBits); i++) 
             remBits[i] ^= xorBits[i];
+        if (PROG.printSteps) {
+            printf("    XOR:"); 
+            i2pc(xorBits, crc->n, 0, 1, 34, 0, crc->n, -1, -1, msg->paddedBitLen - crc->n + (crc->init ? 11 : 10) -8); 
+            i2pc(remBits, crc->n, 0, 1, 37, 0, crc->n, -1, -1, msg->paddedBitLen - crc->n + (crc->init ? 11 : 10) ); 
+        }
     }
+    
 
     // Convert remBits to int with choice of bit ordering
     uint64_t rem;
