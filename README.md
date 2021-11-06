@@ -1,4 +1,6 @@
-# CRC Explorer - **sail the seven seas of CRCs**
+# CRC Explorer
+> *sail the seven seas of CRCs*  
+
 
 ## Tour
 
