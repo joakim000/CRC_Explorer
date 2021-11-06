@@ -2,7 +2,7 @@
 #include "jlibc/files.h"
 #include "jlibc/datagenerator.h"
 #include "jlibc/common.h"
-
+#include "assets/zoo.h"
 
 void main(int argc, char* argv[] )
 {
@@ -14,7 +14,10 @@ void main(int argc, char* argv[] )
     clock_t timer_start; clock_t timer_end; 
 
     /* Setup */
-    #include "crc_zoo.c" // Unconventional use of #include, just a convenient way to put the CRC definitions in a separate file.
+    // #include "crc_zoo.c" // Unconventional use of #include, just a convenient way to put the CRC definitions in a separate file.
+    crcdef_t zoo[] = { CRC_ZOO };
+
+
     // Program settings and variables
     prog_t new_prog = {
         .verbose = VERBOSE,
