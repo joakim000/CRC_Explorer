@@ -107,7 +107,7 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
     }
     else {
     // Poly division with printing of steps
-        // Header
+        // Table header
         char fmt[0x40];
         uint8_t gSkip[gBits_size]; for I2(gBits_size) gSkip[i] = 0;
         if (crc->init) {
@@ -123,25 +123,23 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
         int separator = 0; int newLines = 1;
         // Content
         printf("\n Before: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 0, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
-        // for (; i < REMLOOPEND; i++)                       // Special accomodation, cf. error.h
-        for (int i = 0; i < msg->originalBitLen + msg->initPad; i++)  // Standard loop ending condition
+        // for (; i < REMLOOPEND; i++)                                   // Special accomodation, cf. error.h
+        for (int i = 0; i < msg->originalBitLen + msg->initPad; i++)    // Standard loop ending condition
             if (msg->msgBits[i]) {
                 if (!PROG.prt_nogen)
-                    i2pc(gBits, gBits_size, separator, newLines, 33, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9); 
+                    i2pc(gBits, gBits_size, separator, newLines, 33, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9); // 9 is len of line-header of other lines
                 for (int j = 0, k = i; j < gBits_size; j++, k++) 
                     msg->msgBits[k] ^= gBits[j];
                 printf("   @%3d: ", i); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 36, i, gBits_size, space1, space2, 0);
             }
             else if (PROG.prt_noskip) {  
                 if (!PROG.prt_nogen)
-                    i2pc(gSkip, gBits_size, separator, newLines, 90, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9); 
+                    i2pc(gSkip, gBits_size, separator, newLines, 90, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9); // 9 is len of line-header of other lines
                 printf("Skip%3d: ", i); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 36, i, gBits_size, space1, space2, 0);
             }  
         printf("  After: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 37, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
     } 
-        
-
-    if (PROG.verbose) { puts("Message post calculation"); i2p(msg->msgBits, msg->paddedBitLen, 0, 0, 1);  }
+    if (PROG.verbose) { puts("Message post calculation:"); i2p(msg->msgBits, msg->paddedBitLen, 0, 0, 1);  }
 
     // Slice off the remBits from msgBits
     uint8_t remBits[crc->n];
@@ -155,11 +153,10 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
             remBits[i] ^= xorBits[i];
         if (PROG.printSteps) {
             printf("    XOR:"); 
-            i2pc(xorBits, crc->n, 0, 1, 34, 0, crc->n, -1, -1, msg->paddedBitLen - crc->n + (crc->init ? 11 : 10) -8); 
+            i2pc(xorBits, crc->n, 0, 1, 34, 0, crc->n, -1, -1, msg->paddedBitLen - crc->n + (crc->init ? 11 : 10) -8); // 8 is len of "    XOR:"
             i2pc(remBits, crc->n, 0, 1, 37, 0, crc->n, -1, -1, msg->paddedBitLen - crc->n + (crc->init ? 11 : 10) ); 
         }
     }
-    
 
     // Convert remBits to int with choice of bit ordering
     uint64_t rem;
@@ -211,22 +208,24 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
         char prt_init[18] = " ";  if (crc->init) sprintf(prt_init, "%#18llX", crc->init);
         char prt_xor[18] = " ";  if (crc->xor) sprintf(prt_xor, "%#18llX", crc->xor);
         char* prt_nondirect = crc->nondirect ? "X" : " "; 
+        char* prt_il1 = crc->il1 ? "X" : " "; 
         char* prt_refIn = crc->inputLSF ? "X" : " "; 
         char* prt_refOut = crc->resultLSF ? "X" : " "; 
-        printf("\e[1;1m%16s\e[m ", crc->description);
-        printf("%#18llX %#18s  %-3s ",  crc->g, prt_init, prt_nondirect);
-        printf("%#18s    %-2s    %-3s ", prt_xor, prt_refIn, prt_refOut);
+        printf("\e[1;1m%-18s\e[m ", crc->description);
+        printf("%#18llX   %-3s %#18s   %-3s ",  crc->g, prt_il1, prt_init, prt_nondirect);
+        printf("%#18s    %-2s    %-3s   ", prt_xor, prt_refIn, prt_refOut);
     }
     else {
     // Verbose print for normal execution
         char prt_init[18] = "No";  if (crc->init) sprintf(prt_init, "%#llX", crc->init);
         char prt_xor[18] = "No";  if (crc->xor) sprintf(prt_xor, "%#llX", crc->xor);
         char* prt_nondirect = crc->nondirect ? "Yes" : "No"; 
+        char* prt_il1 = crc->il1 ? "Yes" : "No"; 
         char* prt_refIn = crc->inputLSF ? "Yes" : "No"; 
         char* prt_refOut = crc->resultLSF ? "Yes" : "No"; 
         printf("\e[1;53m\e[1;7m%s\e[1;27m   ", crc->description);
-        printf("Poly:%#llX   Init:%s   NDI:%s   ",  crc->g, prt_init, prt_nondirect);
-        printf("XorOut:%s   RefIn:%s   RefOut:%s   \e[1;55m\n", prt_xor, prt_refIn, prt_refOut);
+        printf("Poly:%#llX   IL1:%s   Init:%s   NDI:%s   ",  crc->g, prt_il1, prt_init, prt_nondirect);
+        printf("XorOut:%s   RefIn:%s   RefOut:%s   \e[m\n", prt_xor, prt_refIn, prt_refOut);
     }    
 
     // Check value-test for this spec
@@ -250,7 +249,7 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
 }
 
 void ZooTour(crcdef_t zoo[], size_t zoo_size) {
-    printf("\e[1;3m\e[1;4m%5s %18s %18s %5s %18s %4s %18s %5s %6s %6s\e[m\n", "Index", "Spec", "Poly", "NoIL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value");
+    printf("\e[1;3m\e[1;4m%5s %-18s %18s %4s %19s %4s   %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "IL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value              ");
     for (int i = 0; i < zoo_size; i++) {
         crc_t zooItem;
         printf("%5d ", i);
