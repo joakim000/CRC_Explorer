@@ -19,9 +19,10 @@ char* ReadTextFromFile(char filename[], size_t max_readlength, bool verbose, uin
     } 
     else {  
         if (verbose) printf("Reading file %s  ...  ", filename);
-        while ( (totalRead + buf_size < max_readlength) && (elementsRead = fread(buf, 1, sizeof buf, fp) ) > 0 )
+        while ( (totalRead + buf_size < max_readlength) && (elementsRead = fread(buf, 1, sizeof buf, fp) ) > 0 ) {
             totalRead += elementsRead;
             strcat(fcontent, buf);
+        }
         if (ferror(fp)) {
             PRINTERR("File read error.")
             if (error != NULL) *error = 2;
