@@ -228,19 +228,19 @@ void main(int argc, char* argv[] )
         msg = PrepareMsg(crc, message);
         msg->validation_rem = checksum;
 
-       // if (PROG.verbose) 
-        printf("Checksum:\t\t%#llX\n", msg->validation_rem);
 
          // Calculate remainder with engine pointed to, also start and stop timer
         timer_start = clock();
             msg->rem = GetRem_ptr(crc, msg, 0);
         timer_end = clock();
 
-        
         // Validate the messsage
         msg->valid = Validate(crc, msg);
-        
-        // Print result        
+       
+        // Printing 
+        printf("Checksum:\t\t%#llX\n", msg->validation_rem);
+        double elapsed = TIMING(timer_start, timer_end);
+        if (ca.timing) printf("%d chars in %5.3f seconds, %5.3f MiB/s.\n", msg->len, elapsed, msg->len / elapsed / 0x100000);
         ValidPrint(msg->msgStr, msg->len, msg->valid);
 
         // Free allocations
