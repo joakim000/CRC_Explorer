@@ -8,5 +8,4 @@ Read files (too many chars)                    Garbage chars in input           
 
 ## Both
 
-Tomt -m (oavsett kommando)                     Segfault                            cmdargs.c
-Tomt -c (oavsett kommando) el outofrange       Segfault                            cmdargs.c
+Read files, constant read size                                                      files.c

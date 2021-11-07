@@ -13,6 +13,254 @@ clock_t timer_start; clock_t timer_end;
 // Pointer to engine
 GetRem_ptr_t GetRem_ptr;
 
+/** CRC specification control ***************************************************/
+void LoadDef(crcdef_t zoo[], size_t index, crc_t* crc) {
+        // 0 n   1 Gen    2 IL1  3 Init  4 Nondir. 5 RefIn 6 RefOut 7 XorOut   8 Residue 9 Check      10 "AB"
+        strcpy((crc)->description, zoo[index].name);
+        crc->n =         zoo[index].specs[0];
+        crc->g =         zoo[index].specs[1];
+        crc->il1 =       zoo[index].specs[2];
+        crc->init =      zoo[index].specs[3];
+        crc->nondirect = zoo[index].specs[4];
+        crc->inputLSF =  zoo[index].specs[5];
+        crc->resultLSF = zoo[index].specs[6];
+        crc->xor =       zoo[index].specs[7];
+        crc->residue =   zoo[index].specs[8];
+        crc->check =     zoo[index].specs[9];
+        crc->checkAB =   zoo[index].specs[10];
+
+    // Convert generator polynomial to array of bit values  
+    int2bitsMSF(sizeof(crc->g), &crc->g, crc->gBits, true );          
+    crc->gBits[COUNT_OF(crc->gBits) - crc->n - 1] = crc->il1;         
+
+    // If needed, convert direct init to non-direct
+    crc->init_conv = (crc->init && !crc->nondirect) ?
+        ConvertInit(crc->g, crc->init, crc->n) : crc->init;
+
+    // Convert init and final xor to array of bit values  
+    int2bitsMSF(sizeof(crc->init_conv), &crc->init_conv, crc->initBits, 0 );    
+    int2bitsMSF(sizeof(crc->xor), &crc->xor, crc->xorBits, 0 );       
+
+}
+
+void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
+    LoadDef(zoo, index, crc);  
+    
+    if (table) {
+    // Oneline print for zoo-list
+        char prt_init[18] = " ";  if (crc->init) sprintf(prt_init, "%#18llX", crc->init);
+        char prt_xor[18] = " ";  if (crc->xor) sprintf(prt_xor, "%#18llX", crc->xor);
+        char* prt_nondirect = crc->nondirect ? "X" : " "; 
+        char* prt_il1 = crc->il1 ? "X" : " "; 
+        char* prt_refIn = crc->inputLSF ? "X" : " "; 
+        char* prt_refOut = crc->resultLSF ? "X" : " "; 
+        printf("\e[1;1m%-18s\e[m ", crc->description);
+        printf("%#18llX   %#18s   %-3s",  crc->g, prt_init, prt_nondirect);
+        // printf("%#18llX   %-3s %#18s   %-3s ",  crc->g, prt_il1, prt_init, prt_nondirect); // With IL1
+        printf("%#18s    %-2s    %-3s   ", prt_xor, prt_refIn, prt_refOut);
+    }
+    else {
+    // Verbose print for normal execution
+        char prt_init[18] = "No";  if (crc->init) sprintf(prt_init, "%#llX", crc->init);
+        char prt_xor[18] = "No";  if (crc->xor) sprintf(prt_xor, "%#llX", crc->xor);
+        char* prt_nondirect = crc->nondirect ? "Yes" : "No"; 
+        char* prt_il1 = crc->il1 ? "Yes" : "No"; 
+        char* prt_refIn = crc->inputLSF ? "Yes" : "No"; 
+        char* prt_refOut = crc->resultLSF ? "Yes" : "No"; 
+        printf("\e[1;53m\e[1;7m%s\e[1;27m   ", crc->description);
+        printf("Poly:%#llX   IL1:%s   Init:%s   NDI:%s   ",  crc->g, prt_il1, prt_init, prt_nondirect);
+        printf("XorOut:%s   RefIn:%s   RefOut:%s   \e[m\n", prt_xor, prt_refIn, prt_refOut);
+    }    
+
+    // Check value-test for this spec
+      // Disable printSteps when testing
+    uint8_t tmp_printSteps = PROG.printSteps; 
+    if (table) PROG.printSteps = false;
+    PROG.printSteps = SELFTESTSTEPS;   //DEBUG
+
+    ValueCheckTest(crc, 0, table ? 1 : 2);
+
+    PROG.printSteps = tmp_printSteps; // Reset printSteps flag
+
+
+    if (VERBOSE && !table) { 
+    // Diagnostic info
+        printf("     gBits: "); i2p(&crc->gBits, COUNT_OF(crc->gBits), crc->n+1, 0, 1);
+        // if (VERBOSE || expected) printBits("Generator",  crc->gBits, COUNT_OF( crc->gBits ), crc->gBits_size);
+        printf("  initBits:  "); i2p(&crc->initBits, COUNT_OF(crc->initBits), crc->n, 0, 1);
+        printf("   xorBits:  "); i2p(&crc->xorBits, COUNT_OF(crc->xorBits), crc->n, 0, 1);
+    }
+}
+
+void ZooTour(crcdef_t zoo[], size_t zoo_size) {
+    printf("\e[1;3m\e[1;4m%5s %-18s %18s   %18s %4s %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value               ");
+    // printf("\e[1;3m\e[1;4m%5s %-18s %18s %4s %19s %4s   %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "IL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value              "); // Med IL1
+    for (int i = 0; i < zoo_size; i++) {
+        crc_t zooItem;
+        printf("%5d ", i);
+        LoadDefWrapper(zoo, i, &zooItem, true);
+    }
+}
+/** end CRC specification control ***********************************************/
+
+/** Testing *********************************************************************/
+implTest_t ImplValid(crc_t* crc) {
+    implTest_t test;
+    uint64_t res;
+
+    // res = ValueCheckTest(crc, 0, 2); 
+    // test.passed_check = res == crc->check ? true : false;
+    
+    res = ValueCheckTest(crc, 1, 0); 
+    test.passed_validate_check = res == 0 ? true : false;
+    test.passed_validate_check ? printf("\e[1;32mPassed\e[m") : printf("\e[1;31mFailed\e[m");
+    printf(" check value validation; \"123456789\" with CRC value %#llX => %#llX\n", crc->check, res);
+
+    res = ValueCheckTest(crc, 2, 0); 
+    test.passed_changed_check =  res != 0 ? true : false;
+    test.passed_changed_check ? printf("\e[1;32mPassed\e[m") : printf("\e[1;31mFailed\e[m");
+    printf(" changed message; \"1b3456789\" with CRC value %#llX => %#llX\n", crc->check, res);
+
+}
+
+implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
+    implTest_t test;
+    uint64_t res;
+
+    // Encode    
+    char* message = (char*)GetU8random(set_size, 255, NULL);
+    msg_t* perf = PrepareMsg(crc, message);
+
+    timer_start = clock();
+        perf->rem = GetRem_ptr(crc, perf, 0);
+    timer_end = clock();
+
+    double elapsed = TIMING(timer_start, timer_end);
+    printf("  Encode: %10d chars in %6.3f seconds, %6.3f MiB/s.\n", perf->len, elapsed, perf->len / elapsed / 0x100000);
+
+    // Validate
+    timer_start = clock();
+               perf->rem = GetRem_ptr(crc, perf, perf->rem);
+    timer_end = clock();
+
+    test.passed_validate_msg = perf->rem == 0; 
+    elapsed = TIMING(timer_start, timer_end);
+    printf("Validate: %10d chars in %6.3f seconds, %6.3f MiB/s. ", perf->len, elapsed, perf->len / elapsed / 0x100000);
+    test.passed_validate_msg ? printf("\e[1;32mPassed.\e[m\n") : printf("\e[1;31mFailed.\e[m\n");
+
+    // Free
+    if (perf->msgStr != NULL) free(perf->msgStr);
+    if (perf->msgBits != NULL) free(perf->msgBits);
+    if (perf != NULL) free(perf);
+}
+
+uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
+    // Prepare standard check message
+    char message[] = "123456789";
+    msg_t* test_msg = PrepareMsg(crc, message);
+    if (type == 2)
+        test_msg->msgStr[1] = 'x';
+
+    // Call engine
+    if (type == 0) 
+        test_msg->rem = GetRem_ptr(crc, test_msg, 0);
+    else 
+        test_msg->rem = GetRem_ptr(crc, test_msg, crc->check);
+
+    bool valid = ( (type == 0 && test_msg->rem == crc->check) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
+
+    // Print check value test result
+    if (valid && output == 1) 
+        // printf("\e[1;32mPassed\e[m\n");                                       // Short
+        printf("\e[1;32mPassed\e[m %#0llX\n", test_msg->rem, crc->check);         // Show value
+    if (valid && output == 2) 
+            printf("\e[1;32mPassed check value-test for %s;\e[m matching %#llX\n", crc->description, crc->check);
+    if (!valid && output == 1) 
+        // printf("\e[1;31mFailed\e[m\n");                                            // Short
+        printf("\e[1;31mFailed\e[m %#0llX != %#0llX\n", test_msg->rem, crc->check);      // Show values                                    
+    if (!valid && output == 2) 
+        printf("\e[1;31m\e[1;5mFailed\e[1;25m check value-test for %s;\e[m result %#0llX != check %#0llX\n", crc->description, test_msg->rem, crc->check); 
+    // Free allocation for msg struct
+    if (test_msg != NULL) free(test_msg);
+    // Return result
+    return test_msg->rem;
+}
+
+bool CustomValueCheck(crc_t* crc, msg_t* msg) {
+        if ( msg->expected && (msg->rem != msg->expected || PROG.verbose) ) {
+            printf("Expected:\t%#llX\n", msg->expected);
+            if (PROG.verbose) {                                   // Print bits of result and expected for analysis
+                uint8_t checksumBits[sizeof(msg->rem) * 8];
+                int2bitsMSF(sizeof(msg->rem), &msg->rem, checksumBits, false);
+                printBits("Checksum", checksumBits, COUNT_OF(checksumBits), crc->n);
+                uint8_t expectedBits[sizeof(msg->expected) * 8];
+                int2bitsMSF(sizeof(msg->expected), &msg->expected, expectedBits, false);
+                printBits("Expected", expectedBits, COUNT_OF(expectedBits), crc->n);
+            }
+            msg->rem == msg->expected ?
+                printf("\e[1;32m%s\e[m\n", "Checksum matches expected value.") :  // green
+                printf("\e[1;31m%s\e[m\n", "Checksum does not match expected value."); // red
+        }
+        bool pass = msg->rem == msg->expected ? true : false;
+        return pass;
+}
+/** end Testing *****************************************************************/
+
+
+/** Framework *******************************************************************/
+msg_t* PrepareMsg(crc_t* crc, char* message) {
+// Prepare message struct
+        msg_t* r = calloc(1, sizeof(msg_t));
+
+        int8_t initPad = crc->init > 0 ? crc->n : 0;
+        // int8_t augmentPad = crc->init && !crc->nondirect ? 0 : crc->n;
+        int8_t augmentPad = crc->n;
+
+        r->msgStr = message;
+        r->len = strlen(message);
+        r->initPad = initPad;
+        r->originalBitLen = strlen(message) * sizeof(uint8_t) * BITSINBYTE;
+        // r->.paddedBitLen =   strlen(message) * sizeof(uint8_t) * BITSINBYTE + SPECIALWIDTH + initPad,     // Special
+        r->paddedBitLen =   strlen(message) * sizeof(uint8_t) * BITSINBYTE + augmentPad + initPad;               // Normal
+        return r;
+}
+
+bool Validate(crc_t* crc, msg_t* msg) {
+
+    if (PROG.verbose) printf("Remainder: %#llX\n", msg->rem);
+    return msg->rem == 0 ? true : false;
+}
+
+void ValidPrint(uint8_t msg[], size_t msgSize, bool valid) {
+    if (PRINTMSG) {
+        // char msgStr[msgSize + 1];
+        // charArrayToString(msg, msgSize, msgStr);
+        if (msgSize < PRINTLIMIT)
+            printf("Message to validate:\t%s\n", msg);
+        else
+            printf("Message to validate:\t[%d characters]\n", msgSize);
+    }
+    if (valid) 
+        printf("\e[1;32m%s\e[m\n", "The data is OK"); // green
+    else
+        printf("\e[1;31m%s\e[m\n", "The data is not OK"); // red
+}
+
+//  uint64_t encode(char* msg, int crcIndex) {
+//  }
+
+//  bool Validate(char* msg, int crcIndex, uint64_t check) {
+//  }
+
+static short allocCheck(void* p) {
+    if(p == NULL ) {
+        if (true) fprintf(stderr, "Unable to allocate memory.\n");
+        return 1;
+    }
+    else 
+        return 0;
+}
+/** end Framework *******************************************************************/
 
 /** Internal engine ***************************************************/
 void ArrangeMsg(crc_t* crc, msg_t* msg) {
@@ -169,252 +417,3 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
     return rem;
 }
 /** end Internal engine *********************************************************/
-
-/** CRC specification control ***************************************************/
-void LoadDef(crcdef_t zoo[], size_t index, crc_t* crc) {
-        // 0 n   1 Gen    2 IL1  3 Init  4 Nondir. 5 RefIn 6 RefOut 7 XorOut   8 Residue 9 Check      10 "AB"
-        strcpy((crc)->description, zoo[index].name);
-        crc->n =         zoo[index].specs[0];
-        crc->g =         zoo[index].specs[1];
-        crc->il1 =       zoo[index].specs[2];
-        crc->init =      zoo[index].specs[3];
-        crc->nondirect = zoo[index].specs[4];
-        crc->inputLSF =  zoo[index].specs[5];
-        crc->resultLSF = zoo[index].specs[6];
-        crc->xor =       zoo[index].specs[7];
-        crc->residue =   zoo[index].specs[8];
-        crc->check =     zoo[index].specs[9];
-        crc->checkAB =   zoo[index].specs[10];
-
-    // Convert generator polynomial to array of bit values  
-    int2bitsMSF(sizeof(crc->g), &crc->g, crc->gBits, true );          
-    crc->gBits[COUNT_OF(crc->gBits) - crc->n - 1] = crc->il1;         
-
-    // If needed, convert direct init to non-direct
-    crc->init_conv = (crc->init && !crc->nondirect) ?
-        ConvertInit(crc->g, crc->init, crc->n) : crc->init;
-
-    // Convert init and final xor to array of bit values  
-    int2bitsMSF(sizeof(crc->init_conv), &crc->init_conv, crc->initBits, 0 );    
-    int2bitsMSF(sizeof(crc->xor), &crc->xor, crc->xorBits, 0 );       
-
-}
-
-void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
-    LoadDef(zoo, index, crc);  
-    
-    if (table) {
-    // Oneline print for zoo-list
-        char prt_init[18] = " ";  if (crc->init) sprintf(prt_init, "%#18llX", crc->init);
-        char prt_xor[18] = " ";  if (crc->xor) sprintf(prt_xor, "%#18llX", crc->xor);
-        char* prt_nondirect = crc->nondirect ? "X" : " "; 
-        char* prt_il1 = crc->il1 ? "X" : " "; 
-        char* prt_refIn = crc->inputLSF ? "X" : " "; 
-        char* prt_refOut = crc->resultLSF ? "X" : " "; 
-        printf("\e[1;1m%-18s\e[m ", crc->description);
-        printf("%#18llX   %#18s   %-3s",  crc->g, prt_init, prt_nondirect);
-        // printf("%#18llX   %-3s %#18s   %-3s ",  crc->g, prt_il1, prt_init, prt_nondirect); // With IL1
-        printf("%#18s    %-2s    %-3s   ", prt_xor, prt_refIn, prt_refOut);
-    }
-    else {
-    // Verbose print for normal execution
-        char prt_init[18] = "No";  if (crc->init) sprintf(prt_init, "%#llX", crc->init);
-        char prt_xor[18] = "No";  if (crc->xor) sprintf(prt_xor, "%#llX", crc->xor);
-        char* prt_nondirect = crc->nondirect ? "Yes" : "No"; 
-        char* prt_il1 = crc->il1 ? "Yes" : "No"; 
-        char* prt_refIn = crc->inputLSF ? "Yes" : "No"; 
-        char* prt_refOut = crc->resultLSF ? "Yes" : "No"; 
-        printf("\e[1;53m\e[1;7m%s\e[1;27m   ", crc->description);
-        printf("Poly:%#llX   IL1:%s   Init:%s   NDI:%s   ",  crc->g, prt_il1, prt_init, prt_nondirect);
-        printf("XorOut:%s   RefIn:%s   RefOut:%s   \e[m\n", prt_xor, prt_refIn, prt_refOut);
-    }    
-
-    // Check value-test for this spec
-      // Disable printSteps when testing
-    uint8_t tmp_printSteps = PROG.printSteps; 
-    if (table) PROG.printSteps = false;
-    PROG.printSteps = SELFTESTSTEPS;   //DEBUG
-
-    ValueCheckTest(crc, 0, table ? 1 : 2);
-
-    PROG.printSteps = tmp_printSteps; // Reset printSteps flag
-
-
-    if (VERBOSE && !table) { 
-    // Diagnostic info
-        printf("     gBits: "); i2p(&crc->gBits, COUNT_OF(crc->gBits), crc->n+1, 0, 1);
-        // if (VERBOSE || expected) printBits("Generator",  crc->gBits, COUNT_OF( crc->gBits ), crc->gBits_size);
-        printf("  initBits:  "); i2p(&crc->initBits, COUNT_OF(crc->initBits), crc->n, 0, 1);
-        printf("   xorBits:  "); i2p(&crc->xorBits, COUNT_OF(crc->xorBits), crc->n, 0, 1);
-    }
-}
-
-void ZooTour(crcdef_t zoo[], size_t zoo_size) {
-    printf("\e[1;3m\e[1;4m%5s %-18s %18s   %18s %4s %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value               ");
-    // printf("\e[1;3m\e[1;4m%5s %-18s %18s %4s %19s %4s   %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "IL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value              "); // Med IL1
-    for (int i = 0; i < zoo_size; i++) {
-        crc_t zooItem;
-        printf("%5d ", i);
-        LoadDefWrapper(zoo, i, &zooItem, true);
-    }
-}
-/** end CRC specification control ***********************************************/
-
-/** Testing *********************************************************************/
-implTest_t ImplValid(crc_t* crc) {
-    implTest_t test;
-    uint64_t res;
-
-    // res = ValueCheckTest(crc, 0, 2); 
-    // test.passed_check = res == crc->check ? true : false;
-    
-    res = ValueCheckTest(crc, 1, 0); 
-    test.passed_validate_check = res == 0 ? true : false;
-    test.passed_validate_check ? printf("\e[1;32mPassed\e[m") : printf("\e[1;31mFailed\e[m");
-    printf(" check value validation; \"123456789\" with CRC value %#llX => %#llX\n", crc->check, res);
-
-    res = ValueCheckTest(crc, 2, 0); 
-    test.passed_changed_check =  res != 0 ? true : false;
-    test.passed_changed_check ? printf("\e[1;32mPassed\e[m") : printf("\e[1;31mFailed\e[m");
-    printf(" changed message; \"1b3456789\" with CRC value %#llX => %#llX\n", crc->check, res);
-
-}
-
-implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
-    implTest_t test;
-    uint64_t res;
-
-    // Encode    
-    char* message = (char*)GetU8random(set_size, 255, NULL);
-    msg_t* perf = PrepareMsg(crc, message);
-
-    timer_start = clock();
-        perf->rem = GetRem_ptr(crc, perf, 0);
-    timer_end = clock();
-
-    double elapsed = TIMING(timer_start, timer_end);
-    printf("  Encode: %10d chars in %6.3f seconds, %6.3f MiB/s.\n", perf->len, elapsed, perf->len / elapsed / 0x100000);
-
-    // Validate
-    timer_start = clock();
-               perf->rem = GetRem_ptr(crc, perf, perf->rem);
-    timer_end = clock();
-
-    test.passed_validate_msg = perf->rem == 0; 
-    elapsed = TIMING(timer_start, timer_end);
-    printf("Validate: %10d chars in %6.3f seconds, %6.3f MiB/s. ", perf->len, elapsed, perf->len / elapsed / 0x100000);
-    test.passed_validate_msg ? printf("\e[1;32mPassed.\e[m\n") : printf("\e[1;31mFailed.\e[m\n");
-
-    // Free
-    free(perf->msgStr);
-    free(perf->msgBits);
-    free(perf);
-}
-
-uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
-    // Prepare standard check message
-    char message[] = "123456789";
-    msg_t* test_msg = PrepareMsg(crc, message);
-    if (type == 2)
-        test_msg->msgStr[1] = 'x';
-
-    // Call engine
-    if (type == 0) 
-        test_msg->rem = GetRem_ptr(crc, test_msg, 0);
-    else 
-        test_msg->rem = GetRem_ptr(crc, test_msg, crc->check);
-
-    bool valid = ( (type == 0 && test_msg->rem == crc->check) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
-
-    // Print check value test result
-    if (valid && output == 1) 
-        // printf("\e[1;32mPassed\e[m\n");                                       // Short
-        printf("\e[1;32mPassed\e[m %#0llX\n", test_msg->rem, crc->check);         // Show value
-    if (valid && output == 2) 
-            printf("\e[1;32mPassed check value-test for %s;\e[m matching %#llX\n", crc->description, crc->check);
-    if (!valid && output == 1) 
-        // printf("\e[1;31mFailed\e[m\n");                                            // Short
-        printf("\e[1;31mFailed\e[m %#0llX != %#0llX\n", test_msg->rem, crc->check);      // Show values                                    
-    if (!valid && output == 2) 
-        printf("\e[1;31m\e[1;5mFailed\e[1;25m check value-test for %s;\e[m result %#0llX != check %#0llX\n", crc->description, test_msg->rem, crc->check); 
-    // Free allocation for msg struct
-    if (test_msg != NULL) free(test_msg);
-    // Return result
-    return test_msg->rem;
-}
-
-bool CustomValueCheck(crc_t* crc, msg_t* msg) {
-        if ( msg->expected && (msg->rem != msg->expected || PROG.verbose) ) {
-            printf("Expected:\t%#llX\n", msg->expected);
-            if (PROG.verbose) {                                   // Print bits of result and expected for analysis
-                uint8_t checksumBits[sizeof(msg->rem) * 8];
-                int2bitsMSF(sizeof(msg->rem), &msg->rem, checksumBits, false);
-                printBits("Checksum", checksumBits, COUNT_OF(checksumBits), crc->n);
-                uint8_t expectedBits[sizeof(msg->expected) * 8];
-                int2bitsMSF(sizeof(msg->expected), &msg->expected, expectedBits, false);
-                printBits("Expected", expectedBits, COUNT_OF(expectedBits), crc->n);
-            }
-            msg->rem == msg->expected ?
-                printf("\e[1;32m%s\e[m\n", "Checksum matches expected value.") :  // green
-                printf("\e[1;31m%s\e[m\n", "Checksum does not match expected value."); // red
-        }
-        bool pass = msg->rem == msg->expected ? true : false;
-        return pass;
-}
-/** end Testing *****************************************************************/
-
-
-/** Framework *******************************************************************/
-msg_t* PrepareMsg(crc_t* crc, char* message) {
-// Prepare message struct
-        msg_t* r = calloc(1, sizeof(msg_t));
-
-        int8_t initPad = crc->init > 0 ? crc->n : 0;
-        // int8_t augmentPad = crc->init && !crc->nondirect ? 0 : crc->n;
-        int8_t augmentPad = crc->n;
-
-        r->msgStr = message;
-        r->len = strlen(message);
-        r->initPad = initPad;
-        r->originalBitLen = strlen(message) * sizeof(uint8_t) * BITSINBYTE;
-        // r->.paddedBitLen =   strlen(message) * sizeof(uint8_t) * BITSINBYTE + SPECIALWIDTH + initPad,     // Special
-        r->paddedBitLen =   strlen(message) * sizeof(uint8_t) * BITSINBYTE + augmentPad + initPad;               // Normal
-        return r;
-}
-
-bool Validate(crc_t* crc, msg_t* msg) {
-
-    if (PROG.verbose) printf("Remainder: %#llX\n", msg->rem);
-    return msg->rem == 0 ? true : false;
-}
-
-void ValidPrint(uint8_t msg[], size_t msgSize, bool valid) {
-    if (PRINTMSG) {
-        // char msgStr[msgSize + 1];
-        // charArrayToString(msg, msgSize, msgStr);
-        if (msgSize < PRINTLIMIT)
-            printf("Message to validate:\t%s\n", msg);
-        else
-            printf("Message to validate:\t[%d characters]\n", msgSize);
-    }
-    if (valid) 
-        printf("\e[1;32m%s\e[m\n", "The data is OK"); // green
-    else
-        printf("\e[1;31m%s\e[m\n", "The data is not OK"); // red
-}
-
-//  uint64_t encode(char* msg, int crcIndex) {
-//  }
-
-//  bool Validate(char* msg, int crcIndex, uint64_t check) {
-//  }
-
-static short allocCheck(void* p) {
-    if(p == NULL ) {
-        if (true) fprintf(stderr, "Unable to allocate memory.\n");
-        return 1;
-    }
-    else 
-        return 0;
-}
-/** end Framework *******************************************************************/
