@@ -54,9 +54,6 @@ The currently included validation test performs 3 steps:
 
 The currently included performance test measures clock cycles while encoding randomized 8-bit numbers in 64 kiB, 1 MiB and 16 MiB streams. Results in seconds and MiB/s.
 
-#### Timing flag 
-
-
 ## External engine API
 
 To test your CRC implemenation, 
@@ -68,6 +65,7 @@ To test your CRC implemenation,
 When using this functionality, the command line option `-i` activates the internal engine for comparison.
 
 `engine.h` declaration of `GetRem`:
+
 ~~~c
 /**
 *  @brief  Get remainder from CRC calculation
