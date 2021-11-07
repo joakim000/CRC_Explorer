@@ -38,9 +38,6 @@ typedef struct msg_s msg_t;
 *          crc->
 *            n          Bit width 
 *            g          Generator polynomial
-*            il1        Generator polynomial has Implicit leading 1. 
-*                        Generally true, but provided because exceptions
-*                        do exist (example: CRC-15/CAN).
 *            init       Initial CRC value, also known as seed.
 *            nondirect  Init can be "direct" or "non-direct".
 *                        Generally false, but provided because exceptions
@@ -65,9 +62,6 @@ typedef struct crc_s {
     /** Definition of a CRC *************************************************************/
     uint64_t n;          // Bit width 
     uint64_t g;          // Generator polynomial
-    uint8_t il1;         // Generator polynomial has Implicit leading 1. 
-                         //   Generally true, but provided because exceptions
-                         //   do exist (example: CRC-15/CAN).
     uint64_t init;       // Initial CRC value, also known as seed.
     uint8_t  nondirect;  // Init can be "direct" or "non-direct".
                          //   Generally false, but provided because exceptions
@@ -77,8 +71,15 @@ typedef struct crc_s {
                          //   Note, reflection is over whole value, not per byte. 
     uint64_t xor;        // Final XOR; XOR result with this value after calculation
                          // is done, but before result reflection (if any). 
+
+    uint8_t il1;         // Generator polynomial has implicit leading 1. 
+                         //   Generally true, but provided because exceptions
+                         //   do exist (example: CRC-15/CAN*).
     /************************************************************************************/
-    
+    //  * This spec I've later found be incorrect, the real CRC-15/CAN also using 
+    //  implicit leading 1. So this flag exists, should anyone need it, but can
+    //  probably be safely ignored (assumed true).  
+
     // Extra info
     char description[64];
     uint64_t residue;    // Given as spec on some sites, not sure what it's used for yet.

@@ -10,13 +10,11 @@ void main(int argc, char* argv[] )
     crc_t* crc;  
     msg_t* msg;
 
-    //Timing
+    // Timing
     clock_t timer_start; clock_t timer_end; 
 
-    /* Setup */
-    // #include "crc_zoo.c" // Unconventional use of #include, just a convenient way to put the CRC definitions in a separate file.
+    // CRC data
     crcdef_t zoo[] = { CRC_ZOO };
-
 
     // Program settings and variables
     prog_t new_prog = {
@@ -26,7 +24,8 @@ void main(int argc, char* argv[] )
         .selfTest = SELFTEST,
     };
     prog = &new_prog;    
-    // Command line arguments
+
+    //* Command line arguments *//
     struct benchargs {
         bool zoo, enc, validate, impl_test, perf_test,              // Command
              printSteps, verbose, timing, prt_nogen, prt_noskip, use_internal_engine,   // Flags
@@ -84,14 +83,13 @@ void main(int argc, char* argv[] )
     PROG.internal_engine = (!EXTERNAL_ENGINE_AVAILABLE || ca.use_internal_engine) ? true : false;
     GetRem_ptr = PROG.internal_engine ? GetRemInternal : GetRem;
 
-
     // Check for a known command
     if (!ca.zoo && !ca.enc && !ca.validate && !ca.impl_test && !ca.perf_test) {
         printf("Available commands:\n\tzoo\tWhere all the CRCs live\n\tenc\tEncode a message\n"
-               "\tval\tValidate a message\n\timp\tImplemenation test\n\thelp\tMore help\n", NULL);
+               "\tval\tValidate a message\n\timp\tImplementation test\n\tperf\tPerformance test\n\thelp\tMore help\n", NULL);
         exit(EXIT_SUCCESS);
     }
-    // Command line arguments end
+    //* end Command line arguments  *//
 
     // Commmand: Show CRC inventory
     if (ca.zoo) {
@@ -104,16 +102,15 @@ void main(int argc, char* argv[] )
         crc_t enc_crc;
         crc = &enc_crc;
         LoadDefWrapper(zoo, ca.crc_spec, &enc_crc, false); 
-
-    // The two tests may be run within one execution    
+    
     // Commmand: Test implementation
     if (ca.impl_test) {
         ImplValid(crc);
 
-        if (!ca.perf_test)
+        if (!ca.perf_test)  // The two tests may be run within one execution    
             exit(EXIT_SUCCESS);
     }
-    // Commmand: Test implementation
+    // Commmand: Test performance
     if (ca.perf_test) {
         ImplPerf(crc, 0x10000);
         ImplPerf(crc, 0x100000);

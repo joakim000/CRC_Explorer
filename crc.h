@@ -49,7 +49,7 @@
  \e[1;4mInput\e[m\n\
   -c        CRC specificaton (visit zoo for indexed list)\n\
   -m        Message\n\
-  -s        Checksum for validation\n\
+  -s        CRC value for validation\n\
   -in       Input file; message for encode, or checksummed for validation (format below)\n\
   -out      Output file for encode, format: [0xABC]Lorem ipsum dolor sit amet\n\
   \n\
@@ -58,15 +58,17 @@
   -nogen   \e[1;3mWith steps:\e[m Don't print generator polynominal\n\
   -noskip  \e[1;3mWith steps:\e[m Do print skipped steps (message bit is 0)\n\
 \n\
-  -i       Internal: use internal engine with external present, for comparison purposes\n\
   -t       Timing: simple benchmark\n\
+  -i       Internal: use internal engine with external present\n\
   -v       Verbose: lots of strange debugging text\n\
 \n\
-\e[1;4mExamples\e[m\n\
-           crc enc -s 33 -in message.txt -out output.txt\n\
-           crc val -s 33 -in message.txt -c 0xABC\n\
+ \e[1;4mExamples\e[m\n\
+           crc enc -c 42 -in message.txt -out message.crc.txt\n\
+           crc val -c 42 -in message.crc.txt\n\
+           crc val -c 42 -s 0xABCD -in message.txt\n\
+           crc enc -c 42 -t -in my_testdata.txt >> benchmark.log\n\
 \n\
-\e[1;4mDo more\e[m\n\
+ \e[1;4mDo more\e[m\n\
   Edit zoo.h to add custom CRC specifications.\n\
   Validate and benchmark your own CRC implementation - see README.\n\n"
 
