@@ -63,7 +63,7 @@ The currently included performance test measures clock cycles while encoding ran
 #### Use of timing flag
 
 You could also do something like  
-`crc -t enc -in my_testdata.txt -c 42`
+`crc -t enc -in my_testdata.txt -c 42`   
 to measure performance with real world data. Currently supports text files up to 16 MiB in size.
 
 ## External engine API
