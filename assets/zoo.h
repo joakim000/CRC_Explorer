@@ -104,6 +104,15 @@
 // width=6 poly=0x2f init=0x00 refin=false refout=false xorout=0x3f check=0x13 residue=0x3a name="CRC-6/GSM"
 // width=12 poly=0x80f init=0x000 refin=false refout=false xorout=0x000 check=0xf5b residue=0x000 name="CRC-12/DECT"
 
+//    name="CRC-82/DARC"
+//   width=82
+//    poly=0x0308c0111011401440411
+//   check=0x09ea83f625023801fd612
+//    init=0x000000000000000000000
+//  xorout=0x000000000000000000000
+// residue=0x000000000000000000000
+//   refin=true 
+//  refout=true 
 
 
 // width=82 poly=0x0308c0111011401440411 init=0x000000000000000000000 refin=true refout=true xorout=0x000000000000000000000 check=0x09ea83f625023801fd612 residue=0x000000000000000000000 name="CRC-82/DARC"
