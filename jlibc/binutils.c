@@ -16,9 +16,19 @@
 // Utility
 #define COUNT_OF(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x]))))) //Google's clever array size macro
 #define EACH (size_t i = 0; i < size; i++)
+#ifndef I2
+#define I2(x) (int i = 0; i < x; i++) 
+#endif
+#ifndef NIBBLE
+#define NIBBLE 4
+#endif
+
+uint64_t bits2intMSF(size_t const size, uint8_t* bits);
+uint64_t bits2intLSF(size_t const size, uint8_t* bits);
 
 
 // Printing functions
+
 void i2p(void const * const ptr, size_t size, size_t cropTo, char separator, int newline){
     // uint32_t *nums = (uint32_t*) ptr;
     if (cropTo == 0)
@@ -93,6 +103,9 @@ void printBits(char label[], uint8_t bits[], size_t size, size_t cropTo) {
         } 
 }
 
+
+// Conversion functions
+
 void int2bitsLSF(size_t const size, void const * const ptr, uint8_t out[], bool extraBit) {
     int  byte_index, 
          bit_index;
@@ -142,6 +155,128 @@ void int2bitsMSF(size_t const bytes, void const * const ptr, uint8_t out[], bool
     }
 }
 
+void hexstr2bitsLSF(size_t const bits, char hexstr[], uint8_t out[], bool extraBit) { }
+
+void hexstr2bitsMSF(size_t const bits, char hexstr[], uint8_t out[], bool extraBit) {
+    // Required: COUNTOF(out) == 128 + extraBit; 
+    int  byte_index, 
+         bit_index,
+         byte_write_index = 0,
+         bit_write_index;
+    char s1[17] = "                "; // 16 spaces 
+    char s2[17] = "                "; 
+    int64_t i1, i2; 
+
+    uint8_t *byte;
+    uint8_t bit;
+    // uint8_t bytes = bits % 8 == 0 ? bits / 8 : (bits / 8) + 1;
+    uint8_t bytes = 8; // Each in i1 and i2
+    
+    // This is to allow n+1 output (9 bits from 8, etc.)
+    // used for CRC generators with implicit leading 1.
+    uint8_t displace = extraBit ? 1 : 0;
+
+    // Split the string
+    if (strlen(hexstr) > 34) { // Hex-prefix + 32 chars
+        fprintf(stderr, "Not supported: Number in hexstring > 128 bits.");
+        return;
+    }
+    if (strlen(hexstr) > 18) { // Hex-prefix + 16 chars
+        for (int i = 2, j = 0; i < strlen(hexstr) - 16; i++, j++)   
+            s1[j] = hexstr[i];
+        for (int i = strlen(hexstr) - 16, j = 0; i < strlen(hexstr); i++, j++)   {
+            s2[j] = hexstr[i];
+        }
+    }
+    else
+        for (int i = 2, j = 0; i < strlen(hexstr); i++, j++)   
+           s1[j] = hexstr[i];
+    
+    // Now we have 2 strings, convert to ints
+    i1 = strtol(s1, NULL, 16);
+    if (strlen(s2) > 0) i2 = strtol(s2, NULL, 16);
+
+    // Process first part
+    byte = (uint8_t*)&i1;
+    for (byte_index = bytes-1; byte_index >= 0; byte_index--) {   //MSF
+       bit_write_index = 0;
+       for (bit_index = 7; bit_index >= 0; bit_index--) {         // MSF
+           bit = (byte[byte_index] >> bit_index) & 1;
+           out[byte_write_index * 8 + bit_write_index++ + displace] = 
+           bit ? 1 : 0;
+       }
+       byte_write_index++;
+    }
+    if (strlen(hexstr) > 18) { 
+    // Process second part
+        byte = (uint8_t*)&i2;
+        for (byte_index = bytes-1; byte_index >= 0; byte_index--) {   //MSF
+        bit_write_index = 0;
+        for (bit_index = 7; bit_index >= 0; bit_index--) {         // MSF
+            bit = (byte[byte_index] >> bit_index) & 1;
+            out[byte_write_index * 8 + bit_write_index++ + displace] = 
+            bit ? 1 : 0;
+        }
+        byte_write_index++;
+        }
+    }
+}
+
+void bits2hexstrLSF(size_t const size, uint8_t* bits,  char out[]) {
+    // Use for 65-128 bits
+
+    uint8_t s1[64] = {};
+    uint8_t s2[64] = {}; 
+    uint64_t i1 = 0;
+    uint64_t i2 = 0;
+
+    // Split bit-array
+    if (size > 64) { 
+        for (int i = 0, j = 0; i < size - 64; i++, j++)   
+            s1[j] = bits[i];
+        for (int i = size - 64, j = 0; i < size; i++, j++)   {
+            s2[j] = bits[i];
+        }
+    }
+    // Convert to ints
+    i1 = bits2intLSF(64, s1);
+    if (size > 64) 
+        i2 = bits2intLSF(64, s2);
+    
+    // Convert to string
+    sprintf(out, "%#llx%016llx", i1, i2);
+
+}
+
+void bits2hexstrMSF(size_t const size, uint8_t* bits,  char out[]) {
+      // Use for 65-128 bits
+    uint8_t hex_orders = size % NIBBLE ? (size / NIBBLE) + 1 : size / NIBBLE;
+    // printf("Hexorders:%d\n", hex_orders);
+
+    uint8_t s1[64] = {};
+    uint8_t s2[64] = {}; 
+    uint64_t i1 = 0;
+    uint64_t i2 = 0;
+
+    // Split bit-array
+    if (size > 64) { 
+        for (int i = 0, j = 128-size; i < size - 64; i++, j++)   
+            s1[j] = bits[i];
+        for (int i = size - 64, j = 0; i < size; i++, j++)   {
+            s2[j] = bits[i];
+        }
+    }
+    // Convert to ints
+    i1 = bits2intMSF(64, s1);
+    if (size > 64) 
+        i2 = bits2intMSF(64, s2);
+    
+    // Convert to string
+    char fmt[16];
+    sprintf(fmt, "%%#0%dllx%%016llx", hex_orders-14);
+    sprintf(out, fmt, i1, i2);
+ }
+
 
 uint64_t bits2intLSF(size_t const size, uint8_t* bits) {
     uint64_t r = 0;
@@ -153,9 +288,9 @@ uint64_t bits2intLSF(size_t const size, uint8_t* bits) {
             // AND with NOT of bit at index means 0
             r &= ~(1ULL << (bit_index) );
 
-        // printf("i:%2d b:%u r:%#llX\n", bit_index, bits[bit_index], r, r);
+        // printf("i:%2d b:%u r:%#llx\n", bit_index, bits[bit_index], r, r);
     }
-    // printf("bits2intLSF returns %#0llX from %d bits: ", r, size);
+    // printf("bits2intLSF returns %#0llx from %d bits: ", r, size);
     // for EACH printf("%d%s", bits[i], (i+1)%4==0 ? " " : "" );     puts("");
     return r; 
 }
@@ -170,29 +305,10 @@ uint64_t bits2intMSF(size_t const size, uint8_t* bits) {
             r |= 1ULL << (--bit_write_index);
         else    
             r &= ~(1ULL << (--bit_write_index) );
-        // printf("i:%2d bwi: %d  b:%u   r:%#llX\n", bit_index, bit_write_index, bits[bit_index], r, r);
+        // printf("i:%2d bwi: %d  b:%u   r:%#llx\n", bit_index, bit_write_index, bits[bit_index], r, r);
     }
     return r; 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void ints2bitsLSF(size_t const size, size_t const type_size, void const * const ptr, uint8_t out[], size_t padSize, uint8_t frontPad_size) {

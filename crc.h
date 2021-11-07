@@ -88,11 +88,32 @@ typedef struct prog_s {
     uint8_t testMsg[9];
 } prog_t;
 
+#ifndef WIDE_CRC
 // CRC definition, serialized specs 
 typedef struct crcdef_s {
         char name[0x80];
         uint64_t specs[11];
 } crcdef_t;
+#else
+// Wide CRC definition, serialized specs 
+// Name   0 n   1 Gen           2 IL1   3 Init      4 Nondirect  5 RefIn  6 RefOut  7 XorOut         8 Residue           9 Check             10 AB              
+
+typedef struct crcdef_s {
+        char name[0x80];
+        uint64_t n; 
+        char g[35];  
+        uint8_t il1;
+        char init[35]; 
+        uint8_t nondirect;
+        uint8_t inputLSF;
+        uint8_t resultLSF;
+        char xor[35];
+        char residue[35];  
+        char check[35];    
+        char checkAB[35];  
+} crcdef_t;
+#endif
+
 
 // A test of an implemenation 
 typedef struct implTest_s {

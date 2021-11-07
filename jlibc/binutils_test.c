@@ -43,12 +43,24 @@ uint8_t message[14] = {'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd', '!
 // uint16_t testval = POLYNOMIAL;
 uint32_t testval = 20000000;
 
+/**
+  @brief Function pointer types and pointers for calling from MSF/LSF generalized functions 
+  @note  Needs to be set before using
+ */
+typedef void (*int2bits_t)(size_t const size, void const * const ptr, uint8_t out[], bool extraBit); 
+typedef uint32_t (*bits2int_t)(size_t const len, uint8_t* bits);
+typedef void (*ints2bits_t)(size_t const size, size_t const type_size, void const * const ptr, uint8_t out[], size_t padSize, uint8_t frontPad_size); 
+typedef void (*bits2ints_t)(size_t const total_bits, size_t const type_size, uint8_t const bits[], void const * const out_ptr);
+extern int2bits_t int2bits;
+extern bits2int_t bits2int;
+extern ints2bits_t ints2bits;
+extern bits2ints_t bits2ints;
+
 
 int main(void)
 {
     // test_byte();
    
-
     int2bits = int2bitsLSF; //uint8 ok, uint16 ok, uint32 ok  
     bits2int = bits2intLSF; //uint8 ok, uint16 ok, uint32 ok  
     bits2ints = bits2intsLSF; //uint8 ok, uint16 ok, uint32 ok
@@ -65,8 +77,15 @@ int main(void)
     test_int2bits2int_multi(int2bits, bits2int, bits2ints);
     test_ints2bits(ints2bits, bits2ints); 
 
+    test_hexstr2bits();
 
 }
+
+void test_hexstr2bits() {
+
+
+}
+
 
 void test_int2bits2int(int2bits_t int2bits, bits2int_t bits2int) {
     size_t type_size = sizeof(testval);

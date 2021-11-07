@@ -14,7 +14,11 @@ void main(int argc, char* argv[] )
     clock_t timer_start; clock_t timer_end; 
 
     // CRC data
+    #ifndef WIDE_CRC
     crcdef_t zoo[] = { CRC_ZOO };
+    #else
+    crcdef_t zoo[] = { W_CRC_ZOO };
+    #endif
 
     // Program settings and variables
     prog_t new_prog = {
@@ -162,7 +166,10 @@ void main(int argc, char* argv[] )
             else
                 printf("Message:\t[%llu characters]\n", msg->len);
         }
-        printf("Checksum:\t%#llX\n", msg->rem);
+        if (crc->n <= 64)
+            printf("Checksum:\t%#llx\n", msg->rem);
+        else
+            printf("Checksum:\t%s\n", msg->w_rem);
         double elapsed = TIMING(timer_start, timer_end);
         if (ca.timing) printf("%d chars in %5.3f seconds, %5.3f MiB/s.\n", msg->len, elapsed, msg->len / elapsed / 0x100000);
 
@@ -171,7 +178,7 @@ void main(int argc, char* argv[] )
         
         // Open file for writing result      
         char csStr[100];
-        sprintf(csStr, "[%#llX]", msg->rem); 
+        sprintf(csStr, "[%#llx]", msg->rem); 
         char outStr[strlen(msg->msgStr) + strlen(csStr)];
         sprintf(outStr, "%s%s", csStr, msg->msgStr); 
         // puts(outStr);
@@ -205,7 +212,7 @@ void main(int argc, char* argv[] )
             checksum = strtol(remaining + 1, end, 16); // 0 if no valid conversion
         }
         if (checksum > 0) {
-            if (PROG.verbose) printf("Checksum in message: %#llX\n", checksum);
+            if (PROG.verbose) printf("Checksum in message: %#llx\n", checksum);
             // Remove from message-string
             remaining = strchr(message, ']');
             if (remaining) {
@@ -238,7 +245,7 @@ void main(int argc, char* argv[] )
         msg->valid = Validate(crc, msg);
        
         // Printing 
-        printf("Checksum:\t\t%#llX\n", msg->validation_rem);
+        printf("Checksum:\t\t%#llx\n", msg->validation_rem);
         double elapsed = TIMING(timer_start, timer_end);
         if (ca.timing) printf("%d chars in %5.3f seconds, %5.3f MiB/s.\n", msg->len, elapsed, msg->len / elapsed / 0x100000);
         ValidPrint(msg->msgStr, msg->len, msg->valid);

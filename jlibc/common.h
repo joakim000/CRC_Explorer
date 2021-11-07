@@ -11,6 +11,10 @@
 #ifndef BITSINBYTE
 #define BITSINBYTE 8
 #endif
+#ifndef NIBBLE
+#define NIBBLE 4
+#endif
+
 
 // Utility
 #ifndef COUNT_OF
