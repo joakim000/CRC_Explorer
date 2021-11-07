@@ -20,6 +20,12 @@ A frustrating experience to be sure, but an excellent lesson in the importance o
 
 ## Features
 
+### General compatibility
+
+Supports all permutations of the 7 common CRC parameters (and 1 uncommon). 
+
+Bit widths up to 64 inclusive; check value tested with specs of width 3-8, 10-17, 21, 24, 30-32, 40 and 64. 
+
 ### Validatable (it's a word)
 
 The simple algorithm and available outputs makes the process easy to validate manually, and provides confidence for validating other implementations in turn.
