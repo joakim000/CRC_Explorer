@@ -54,6 +54,8 @@ The currently included validation test performs 3 steps:
 
 The currently included performance test measures clock cycles while encoding randomized 8-bit numbers in 64 kiB, 1 MiB and 16 MiB streams. Results in seconds and MiB/s.
 
+#### Timing flag 
+
 
 ## External engine API
 
@@ -100,6 +102,11 @@ When using this functionality, the command line option `-i` activates the intern
 */
 uint64_t GetRem(crc_t* crc, msg_t* msg, uint64_t check);
 ~~~
+
+
+## Commands and options reference
+
+ ![Help](assets/help.png)
 
 ## References
 
