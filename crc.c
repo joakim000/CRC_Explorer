@@ -191,13 +191,20 @@ implTest_t ImplValid(crc_t* crc) {
     res = ValueCheckTest(crc, 1, 0); 
     test.passed_validate_check = res == 0 ? true : false;
     test.passed_validate_check ? printf("\e[1;32mPassed\e[m") : printf("\e[1;31mFailed\e[m");
+    #ifndef WIDE_CRC
     printf(" check value validation; \"123456789\" with CRC value %#llx => %#llx\n", crc->check, res);
+    #else
+    printf(" check value validation; \"123456789\" with CRC value %s => %#llx\n", crc->w_check, res);
+    #endif
 
     res = ValueCheckTest(crc, 2, 0); 
     test.passed_changed_check =  res != 0 ? true : false;
     test.passed_changed_check ? printf("\e[1;32mPassed\e[m") : printf("\e[1;31mFailed\e[m");
-    printf(" changed message; \"1b3456789\" with CRC value %#llx => %#llx\n", crc->check, res);
-
+    #ifndef WIDE_CRC
+    printf(" changed message; \"1x3456789\" with CRC value %#llx => %#llx\n", crc->check, res);
+    #else
+    printf(" changed message; \"1x3456789\" with CRC value %s => %#llx\n", crc->w_check, res);
+    #endif
 }
 
 implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
@@ -239,28 +246,35 @@ uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
         test_msg->msgStr[1] = 'x';
 
     // Call engine
-    if (type == 0) 
+    if (type == 0) {
+        #ifdef WIDE_CRC
+        test_msg->w_validation_rem = NULL;                
+        #endif
         test_msg->rem = GetRem_ptr(crc, test_msg, 0);
-    else 
+    }
+    else {
+        #ifdef WIDE_CRC
+        test_msg->w_validation_rem = crc->w_check;                
+        #endif
         test_msg->rem = GetRem_ptr(crc, test_msg, crc->check);
+    }
 
     bool valid = false;
-    // if (crc->n <= 64) {
-    //     valid = ( (type == 0 && test_msg->rem == crc->check) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
-    //     // Print check value test result
-    //     if (valid && output == 1) 
-    //         // printf("\e[1;32mPassed\e[m\n");                                       // Short
-    //         printf("\e[1;32mPassed\e[m %#0llx\n", crc->check);         // Show value
-    //     if (valid && output == 2) 
-    //             printf("\e[1;32mPassed check value-test for %s;\e[m matching %#llx\n", crc->description, crc->check);
-    //     if (!valid && output == 1) 
-    //         // printf("\e[1;31mFailed\e[m\n");                                            // Short
-    //         printf("\e[1;31mFailed\e[m %#0llx != %#0llx\n", test_msg->rem, crc->check);      // Show values                                    
-    //     if (!valid && output == 2) 
-    //         printf("\e[1;31m\e[1;5mFailed\e[1;25m check value-test for %s;\e[m result %#0llx != check %#0llx\n", crc->description, test_msg->rem, crc->check); 
-    // }
-    // else {
-        // printf("ValueCheckTest. w_rem:%s  w_check:%s\n", test_msg->w_rem, crc->w_check);
+    #ifndef WIDE_CRC
+        valid = ( (type == 0 && test_msg->rem == crc->check) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
+        // Print check value test result
+        if (valid && output == 1) 
+            // printf("\e[1;32mPassed\e[m\n");                                       // Short
+            printf("\e[1;32mPassed\e[m %#0llx\n", crc->check);         // Show value
+        if (valid && output == 2) 
+                printf("\e[1;32mPassed check value-test for %s;\e[m matching %#llx\n", crc->description, crc->check);
+        if (!valid && output == 1) 
+            // printf("\e[1;31mFailed\e[m\n");                                            // Short
+            printf("\e[1;31mFailed\e[m %#0llx != %#0llx\n", test_msg->rem, crc->check);      // Show values                                    
+        if (!valid && output == 2) 
+            printf("\e[1;31m\e[1;5mFailed\e[1;25m check value-test for %s;\e[m result %#0llx != check %#0llx\n", crc->description, test_msg->rem, crc->check); 
+    #else
+        if (PROG.verbose) printf("ValueCheckTest. w_rem:%s  w_check:%s\n", test_msg->w_rem, crc->w_check);
         valid = ( (type == 0 && !strcmp(test_msg->w_rem, crc->w_check)) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
         // Print check value test result
         if (valid && output == 1) 
@@ -271,7 +285,7 @@ uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
             printf("\e[1;31mFailed\e[m %s != %s\n", test_msg->w_rem, crc->w_check);      // Show values                                    
         if (!valid && output == 2) 
             printf("\e[1;31m\e[1;5mFailed\e[1;25m check value-test for %s;\e[m result %s != check %s\n", crc->description, test_msg->w_rem, crc->w_check); 
-    // }
+    #endif
     
     // Free allocation for msg struct
     if (test_msg != NULL) free(test_msg);
@@ -306,7 +320,7 @@ msg_t* PrepareMsg(crc_t* crc, char* message) {
         msg_t* r = calloc(1, sizeof(msg_t));
 
         int8_t initPad = crc->init > 0 ? crc->n : 0;
-        // int8_t augmentPad = crc->init && !crc->nondirect ? 0 : crc->n;
+        // int8_t augmentPad = crc->init && !crc->nondirect ? 0 : crc->n;   // Wrong way to apply init
         int8_t augmentPad = crc->n;
 
         r->msgStr = message;
@@ -320,15 +334,21 @@ msg_t* PrepareMsg(crc_t* crc, char* message) {
 }
 
 bool Validate(crc_t* crc, msg_t* msg) {
-
-    if (PROG.verbose) printf("Remainder: %#llx\n", msg->rem);
-    return msg->rem == 0 ? true : false;
+    if (crc->n <= 64) {
+        if (PROG.verbose) printf("Remainder: %#llx\n", msg->rem);
+        return msg->rem == 0 ? true : false;
+    }
+    #ifdef WIDE_CRC
+    else {
+        if (PROG.verbose) printf("Remainder: %s\n", msg->w_rem);
+        size_t len_with_zeroes_only = strspn(msg->w_rem, "x0");
+        return len_with_zeroes_only == strlen(msg->w_rem) ? true : false;
+    }
+    #endif
 }
 
 void ValidPrint(uint8_t msg[], size_t msgSize, bool valid) {
     if (PRINTMSG) {
-        // char msgStr[msgSize + 1];
-        // charArrayToString(msg, msgSize, msgStr);
         if (msgSize < PRINTLIMIT)
             printf("Message to validate:\t%s\n", msg);
         else
@@ -381,6 +401,7 @@ void ArrangeMsg(crc_t* crc, msg_t* msg) {
 
     if (PROG.verbose) {printf("ArrangeMsg validation rem: %#llx\n", msg->validation_rem);}
 
+    #ifndef WIDE_CRC
     if (msg->validation_rem != 0) {
     // Write check bits to padding
         // Convert checksum to array of bit values
@@ -407,6 +428,44 @@ void ArrangeMsg(crc_t* crc, msg_t* msg) {
         if(PROG.verbose)
          { printf("\nrem: %#llx  ", msg->validation_rem);  printf("msgBits (remBits written to backpad): "); i82p(msg->msgBits, msg->paddedBitLen, 0, 0, 1); }
     }
+    #else
+    if ( (crc->n <= 64 && msg->validation_rem != 0) || crc->n > 64 && msg->w_validation_rem != NULL ) {
+    // Write check bits to padding
+        // Convert checksum to array of bit values
+        // Truncate to CRC width
+
+        uint8_t remBits[crc->n]; 
+        if (crc->n <= 64) {
+            if (crc->resultLSF) {
+                int2bitsLSF(sizeof crc->n, &msg->validation_rem, msg->remBits, false);
+                bitSlice(0, crc->n, &(msg->remBits), 0, remBits);
+            }
+            else {
+                int2bitsMSF(sizeof crc->n, &msg->validation_rem, msg->remBits, false);
+                bitSlice(sizeof(msg->validation_rem) * BITSINBYTE - crc->n, crc->n, &(msg->remBits), 0, remBits);
+            }
+        }
+        else {
+            if (crc->resultLSF) {
+                hexstr2bitsLSF(crc->n, msg->w_validation_rem, msg->w_remBits, false);
+                // printBits("hexstr2bitsLSF produced msg->w_rembits", msg->w_remBits, COUNT_OF(msg->w_remBits), 0);
+                bitSlice(0, crc->n, &(msg->w_remBits), 0, remBits);
+            }
+            else {
+                hexstr2bitsMSF(crc->n, msg->w_validation_rem, msg->w_remBits, false);
+                bitSlice(sizeof(msg->w_validation_rem) * BITSINBYTE - crc->n, crc->n, &(msg->w_remBits), 0, remBits);
+            }
+        }
+        // Write to msg padding
+        for (int i = msg->paddedBitLen - crc->n, j = 0; j < crc->n; i++, j++) 
+            msg->msgBits[i] = remBits[j];
+
+        if(PROG.verbose) { 
+            if (crc->n <= 64) printf("\nrem: %#llx  ", msg->validation_rem);
+            else              printf("\nrem: %s  ", msg->w_validation_rem);  
+            printf("msgBits (remBits written to backpad): "); i82p(msg->msgBits, msg->paddedBitLen, 0, 0, 1); }
+    }
+    #endif
 }
 
 uint64_t ConvertInit(uint64_t poly, uint64_t init, uint8_t width) {
@@ -439,10 +498,11 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
     if (crc->n <= 64)
         for (int i = gBits_size - 1, j = COUNT_OF(crc->gBits) - 1; i >= 0; i--, j--)
             gBits[i] = crc->gBits[j];
+    #ifdef WIDE_CRC
     else
         for (int i = gBits_size - 1, j = COUNT_OF(crc->w_gBits) - 1; i >= 0; i--, j--)
             gBits[i] = crc->w_gBits[j];
-
+    #endif
     if (!PROG.printSteps) {
     // Poly division 
         for (int i = 0; i < msg->originalBitLen + msg->initPad; i++)  // Standard loop ending condition
@@ -516,18 +576,24 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
         sprintf(msg->w_rem, fmt, rem);
         // if (PROG.verbose) printf("Remainder: %#llx\n", rem);
     }
+    #ifdef WIDE_CRC
     else {
         if ( crc->resultLSF ) {
-            uint8_t remBits_ref[crc->n];
-            for (int i = 0, j = crc->n-1; i < crc->n; i++, j--)
-                remBits_ref[i] = remBits[j];            
-            bits2hexstrMSF(crc->n, remBits_ref, msg->w_rem);
+            bits2hexstrLSF(crc->n, remBits, msg->w_rem);
         }
         else
             bits2hexstrMSF(crc->n, remBits, msg->w_rem);
-    }
 
-    if (PROG.verbose) printf("Remainder:\t%s\n", msg->w_rem);
+        rem = strtoull(msg->w_rem, NULL, 16);
+
+        // size_t len_with_zeroes_only = strspn(msg->w_rem, "x0");
+        // if (len_with_zeroes_only == strlen(msg->w_rem)) 
+        //     rem = 0;
+    }
+    if (PROG.verbose) printf("Remainder (w_rem):\t%s\n", msg->w_rem);
+    #endif
+
+    if (PROG.verbose) printf("Remainder   (rem):\t%#llx\n", rem);
     return rem;
 }
 /** end Internal engine *********************************************************/

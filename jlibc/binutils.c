@@ -155,7 +155,7 @@ void int2bitsMSF(size_t const bytes, void const * const ptr, uint8_t out[], bool
     }
 }
 
-void hexstr2bitsLSF(size_t const bits, char hexstr[], uint8_t out[], bool extraBit) { }
+
 
 void hexstr2bitsMSF(size_t const bits, char hexstr[], uint8_t out[], bool extraBit) {
     // Required: COUNTOF(out) == 128 + extraBit; 
@@ -222,36 +222,20 @@ void hexstr2bitsMSF(size_t const bits, char hexstr[], uint8_t out[], bool extraB
     }
 }
 
-void bits2hexstrLSF(size_t const size, uint8_t* bits,  char out[]) {
-    // Use for 65-128 bits
-
-    uint8_t s1[64] = {};
-    uint8_t s2[64] = {}; 
-    uint64_t i1 = 0;
-    uint64_t i2 = 0;
-
-    // Split bit-array
-    if (size > 64) { 
-        for (int i = 0, j = 0; i < size - 64; i++, j++)   
-            s1[j] = bits[i];
-        for (int i = size - 64, j = 0; i < size; i++, j++)   {
-            s2[j] = bits[i];
-        }
-    }
-    // Convert to ints
-    i1 = bits2intLSF(64, s1);
-    if (size > 64) 
-        i2 = bits2intLSF(64, s2);
-    
-    // Convert to string
-    sprintf(out, "%#llx%016llx", i1, i2);
-
+void hexstr2bitsLSF(size_t const bits, char hexstr[], uint8_t out[], bool extraBit) { 
+    // Convert with MSF
+    uint8_t holdMSF[128 + extraBit];
+    hexstr2bitsMSF(bits, hexstr, holdMSF, extraBit);
+    // Reflect
+    for (int i = 0, j = COUNT_OF(holdMSF)-1; i < bits; i++, j--)
+        out[i] = holdMSF[j];
 }
+
+
 
 void bits2hexstrMSF(size_t const size, uint8_t* bits,  char out[]) {
       // Use for 65-128 bits
     uint8_t hex_orders = size % NIBBLE ? (size / NIBBLE) + 1 : size / NIBBLE;
-    // printf("Hexorders:%d\n", hex_orders);
 
     uint8_t s1[64] = {};
     uint8_t s2[64] = {}; 
@@ -276,6 +260,40 @@ void bits2hexstrMSF(size_t const size, uint8_t* bits,  char out[]) {
     sprintf(fmt, "%%#0%dllx%%016llx", hex_orders-14);
     sprintf(out, fmt, i1, i2);
  }
+
+void bits2hexstrLSF(size_t const size, uint8_t* bits,  char out[]) {
+    // Use for 65-128 bits
+     uint8_t bits_ref[size];
+            for (int i = 0, j = size-1; i < size; i++, j--)
+                bits_ref[i] = bits[j];            
+
+    bits2hexstrMSF(size, bits_ref, out);
+
+    // uint8_t hex_orders = size % NIBBLE ? (size / NIBBLE) + 1 : size / NIBBLE;
+
+    // uint8_t s1[64] = {};
+    // uint8_t s2[64] = {}; 
+    // uint64_t i1 = 0;
+    // uint64_t i2 = 0;
+
+    // // Split bit-array
+    // if (size > 64) { 
+    //     for (int i = 0, j = 0; i < size - 64; i++, j++)   
+    //         s1[j] = bits_ref[i];
+    //     for (int i = size - 64, j = 0; i < size; i++, j++)   {
+    //         s2[j] = bits_ref[i];
+    //     }
+    // }
+    // // Convert to ints
+    // i1 = bits2intMSF(64, s1);
+    // if (size > 64) 
+    //     i2 = bits2intMSF(64, s2);
+    
+    // // Convert to string
+    //  char fmt[16];
+    // sprintf(fmt, "%%#0%dllx%%016llx", hex_orders-14);
+    // sprintf(out, fmt, i1, i2);
+}
 
 
 uint64_t bits2intLSF(size_t const size, uint8_t* bits) {

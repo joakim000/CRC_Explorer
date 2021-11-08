@@ -12,6 +12,7 @@
 #define MAX_MESSAGE_ARGLENGTH 0x400 
 #define MAX_MESSAGE_READLENGTH 0x1000000    
 #define PRINTLIMIT 0x40
+#define MAX_HEXSTRING_LEN 35 // 32 chars + hex prefix + \0
 
 // Utility
 #define TOWIDTH(x)  uint8_t x[crc->n]; bitSlice(COUNT_OF(crc->x) - crc->n, crc->n, &crc->x, 0, x);

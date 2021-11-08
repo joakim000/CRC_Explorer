@@ -15,6 +15,9 @@
 #define NIBBLE 4
 #endif
 
+#ifndef HEXCHARS
+#define HEXCHARS "xX0123456789abcdefABCDEF"
+#endif
 
 // Utility
 #ifndef COUNT_OF

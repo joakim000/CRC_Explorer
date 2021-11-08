@@ -143,7 +143,7 @@ typedef struct msg_s {
     // Wide validation    
     char w_rem[35];
     uint8_t w_remBits[128];
-    char w_validation_rem[35];
+    char* w_validation_rem;
     #endif
 
 } msg_t;
