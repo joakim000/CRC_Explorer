@@ -34,8 +34,8 @@ void main(int argc, char* argv[] )
         bool zoo, enc, validate, impl_test, perf_test,              // Command
              printSteps, verbose, timing, prt_nogen, prt_noskip, use_internal_engine,   // Flags
              refIn, refOut;                  // Custom spec
-        int checksum, 
-            crc_spec, n, g, init, xor; // Custom spec
+        int  crc_spec, n, g, init, xor; // Custom spec
+        char* checksum[35];
         char* msg[MAX_MESSAGE_ARGLENGTH];
         char* inFile[FILENAME_MAX];
         char* outFile[FILENAME_MAX];
@@ -56,7 +56,7 @@ void main(int argc, char* argv[] )
         // Input
         { .isInt = true,  .var = (int*)&ca.crc_spec, .str = "-c", .defaultString = 0 },          // CRC spec index
         { .isString = true, .var = (char*)&ca.msg, .str = "-m", .defaultString = "" },          // message
-        { .isInt = true,  .var = (int*)&ca.checksum, .str = "-s", .defaultInt = 0 },           // checksum for validation
+        { .isString = true,  .var = (int*)&ca.checksum, .str = "-s", .defaultString = "" },    // checksum for validation
         { .isString = true, .var = (char*)&ca.inFile, .str = "-in", .defaultString = "" },    // input file
         { .isString = true, .var = (char*)&ca.outFile, .str = "-out", .defaultString = "" }, // output file
         // Flags
@@ -203,29 +203,50 @@ void main(int argc, char* argv[] )
     if (ca.validate) {     
         // Check for available checksum:
         uint64_t checksum;
+
         // In message?
-        char checksumStr[0x20] = "";
+        char* checksumStr;
+        char* token;
         char* remaining;
-        char** end;
-        remaining = strchr(message, '[');
-        if (remaining) {
-            checksum = strtol(remaining + 1, end, 16); // 0 if no valid conversion
+        token = strtok(message, "[");
+        if (token != NULL) {
+            token = strtok(NULL, "]");
+            if (token != NULL) {
+                checksumStr = token;
+                remaining = strchr(message, ']');
+                if (remaining) 
+                    message = remaining + 1;
+            }
         }
-        if (checksum > 0) {
-            if (PROG.verbose) printf("Checksum in message: %#llx\n", checksum);
-            // Remove from message-string
-            remaining = strchr(message, ']');
-            if (remaining) {
-                message = remaining + 1;
-            if (PROG.verbose) printf("Remaining message:%s\n", message);
-            }
-            else {
-                // No ending ], where does message begin? Better to use end from strtol, so figure that out.
-            }
-        }        
+        if (checksumStr) {
+            strcpy(msg->w_validation_rem, checksumStr);
+            checksum = strtoull(checksumStr, NULL, 16);
+        }
+
+        // char* remaining;
+        // char** end;
+        // remaining = strchr(message, '[');
+        // if (remaining) {
+        //     checksum = strtoull(remaining + 1, end, 16); // 0 if no valid conversion
+        // }
+        // if (checksum > 0) {
+        //     if (PROG.verbose) printf("Checksum in message: %#llx\n", checksum);
+        //     // Remove from message-string
+        //     remaining = strchr(message, ']');
+        //     if (remaining) {
+        //         message = remaining + 1;
+        //     if (PROG.verbose) printf("Remaining message:%s\n", message);
+        //     }
+        //     else {
+        //         // No ending ], where does message begin? Better to use end from strtol, so figure that out.
+        //     }
+        // }
+
         // In command line?
-        else if (ca.checksum > 0) 
-            checksum = ca.checksum;
+        else if (strlen((char*)ca.checksum) > 0) {
+            checksum = strtoull(ca.checksum, NULL, 16);
+            strcpy(msg->w_validation_rem, (char*)ca.checksum);
+        }
         else {
             PRINTERR("No checksum for validation, exiting.\n");   
             exit(EXIT_FAILURE);
