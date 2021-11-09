@@ -86,7 +86,8 @@ void main(int argc, char* argv[] )
     
     PROG.internal_engine = (!EXTERNAL_ENGINE_AVAILABLE || ca.use_internal_engine) ? true : false;
     GetRem_ptr = PROG.internal_engine ? GetRemInternal : GetRem;
-    if (PROG.internal_engine) PROG.engine_id = "Engine 0"; else PROG.engine_id = EXPLORER_ENGINE_ID;
+    if (PROG.internal_engine) PROG.engine_id = "Engine 0"; 
+    else PROG.engine_id = engine_id == NULL ? "Unknown engine" : engine_id;
 
     // Check for a known command
     if (!ca.zoo && !ca.enc && !ca.validate && !ca.impl_test && !ca.perf_test) {
@@ -190,15 +191,7 @@ void main(int argc, char* argv[] )
         // puts(outStr);
         if ( WriteTextToFile(ca.outFile, outStr, true, NULL) == 1 ) 
             PRINTERR("File write error.");
-        // if (ca.outFile != NULL) {
-        //     FILE* fp; 
-        //     fp = fopen((char*)ca.outFile, "w");
-        //     if (fp != NULL) {
-        //         fprintf(fp, outStr);
-        //         fclose(fp);
-        //     }
-        // }
-
+     
         // Free allocations
         if (msg->msgStr != (char*)ca.msg)
             if (msg->msgStr != NULL) free(msg->msgStr);
@@ -212,10 +205,14 @@ void main(int argc, char* argv[] )
     if (ca.validate) {     
         // Check for available checksum:
         char* checksumWork = "";   
+        // char* checksumGet;   
+        // char* checksumWork;   
 
         //* In message? *//
+        // int8_t parse_error = MetaAndMsgFromText(message, checksumWork, message, "[]", MAX_HEXSTRING_LEN + 0x40);
+        // printf("Parse result:%d\n", parse_error);
+        
         char* token;
-
         // Sanity check before strtok
         size_t max_search_len = MAX_HEXSTRING_LEN + 0x40;                                               // Allow some space for a note  
         char* start_bracket = memchr(message, '[', 1);                                                  // First char should be [
@@ -235,7 +232,7 @@ void main(int argc, char* argv[] )
             }
         }
 
-        // In command line?
+      // In command line?
         if (strlen(checksumWork) < 1) {
             if (strlen(ca.checksum) > 0) {
                 checksumWork = ca.checksum;
@@ -248,18 +245,19 @@ void main(int argc, char* argv[] )
 
         if (PROG.verbose) ("checksumWork (%d):%s\n", strlen(checksumWork), checksumWork);
 
+
         // Handle checksum string 
         char* checksumNote;
         uint64_t checksum = strtoull(checksumWork, &checksumNote, 16);
         char checksumStr[MAX_HEXSTRING_LEN];
         size_t checksum_len = strlen(checksumWork) - strlen(checksumNote);
         strncpy(checksumStr, checksumWork, checksum_len > MAX_HEXSTRING_LEN ? MAX_HEXSTRING_LEN : checksum_len);
+        // if (freeChecksumWork) free(checksumWork);
+
 
         // Prepare message 
         msg = PrepareMsg(crc, message);
         msg->w_validation_rem = checksumStr;    // For experimental wide crc support
-        // strcpy(msg->w_validation_rem, checksumStr);    // For experimental wide crc support
-
 
          // Calculate remainder with engine pointed to, also start and stop timer
         timer_start = clock();
