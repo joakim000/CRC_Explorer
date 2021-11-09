@@ -189,9 +189,11 @@ void main(int argc, char* argv[] )
         char outStr[strlen(msg->msgStr) + strlen(csStr)];
         sprintf(outStr, "%s%s", csStr, msg->msgStr); 
         // puts(outStr);
-        if ( WriteTextToFile(ca.outFile, outStr, true, NULL) == 1 ) 
-            PRINTERR("File write error.");
-     
+        if (strlen(ca.outFile) > 0 ) {
+            if ( WriteTextToFile(ca.outFile, outStr, true, NULL) == 1 ) 
+                PRINTERR("File write error.");
+        }
+
         // Free allocations
         if (msg->msgStr != (char*)ca.msg)
             if (msg->msgStr != NULL) free(msg->msgStr);
