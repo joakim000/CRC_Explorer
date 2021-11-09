@@ -36,6 +36,9 @@
 #define CROPSTR(x, y) char y[strlen((char*)x)+1]; strcpy(y,(char*)x);
 #endif
 
+
+
+
 // Timing
 #ifndef TIMING
 #define TIMING(y, x) ((double)(x - y) / CLOCKS_PER_SEC)
@@ -60,3 +63,11 @@
 #define GENRAND(x) (rand() % x)     // Hope that it works
 #endif
 #endif
+
+short AllocCheck(void* p);
+
+// #ifndef CALLOCOREXIT
+// #define CALLOCOREXIT(x, y, z) if(CallocWtCheck(x, y, z) != 0) exit(EXIT_FAILURE);
+// #endif
+short CallocWtCheck(void* p, size_t elements, size_t element_size);
+

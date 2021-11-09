@@ -12,7 +12,6 @@
 
 *********************************************************************/
 // Uncomment this to enable external engine
-#define EXPLORER_ENGINE_ID "Engine 1"
 
 // Experimental 
 #define WIDE_CRC
@@ -23,6 +22,7 @@
 
 typedef struct crc_s crc_t;
 typedef struct msg_s msg_t;
+extern char* engine_id;
 
 /**
 *  @brief Get remainder from CRC calculation

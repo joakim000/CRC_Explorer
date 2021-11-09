@@ -381,14 +381,8 @@ void ValidPrint(uint8_t msg[], size_t msgSize, bool valid) {
 //  bool Validate(char* msg, int crcIndex, uint64_t check) {
 //  }
 
-static short allocCheck(void* p) {
-    if(p == NULL ) {
-        if (true) fprintf(stderr, "Unable to allocate memory.\n");
-        return 1;
-    }
-    else 
-        return 0;
-}
+
+
 /** end Framework *******************************************************************/
 
 /** Internal engine ***************************************************/
