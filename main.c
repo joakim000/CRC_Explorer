@@ -232,7 +232,10 @@ void main(int argc, char* argv[] )
             }
         }
 
-      // In command line?
+        if (PROG.verbose) 
+        ("checksumWork (%d):%s\n", strlen(checksumWork), checksumWork);
+
+        // If not in message then in command line?
         if (strlen(checksumWork) < 1) {
             if (strlen(ca.checksum) > 0) {
                 checksumWork = ca.checksum;
@@ -243,17 +246,12 @@ void main(int argc, char* argv[] )
             }
         }
 
-        if (PROG.verbose) ("checksumWork (%d):%s\n", strlen(checksumWork), checksumWork);
-
-
         // Handle checksum string 
         char* checksumNote;
         uint64_t checksum = strtoull(checksumWork, &checksumNote, 16);
         char checksumStr[MAX_HEXSTRING_LEN];
         size_t checksum_len = strlen(checksumWork) - strlen(checksumNote);
         strncpy(checksumStr, checksumWork, checksum_len > MAX_HEXSTRING_LEN ? MAX_HEXSTRING_LEN : checksum_len);
-        // if (freeChecksumWork) free(checksumWork);
-
 
         // Prepare message 
         msg = PrepareMsg(crc, message);

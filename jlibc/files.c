@@ -60,13 +60,11 @@ int MetaAndMsgFromText(char* text, char* meta_out, char* msg_out, char delims[2]
         char* token_meta;
         char* token_msg;
 
-
         // Sanity check before strtok
         char* start_bracket = memchr(text, delim1, 1);                                                  // First char should be delim1
         size_t len_after_start = start_bracket == NULL ? 0 : strlen(start_bracket);                     // Msg len after bracket, 
         uint8_t search_len = len_after_start > max_search_len ? max_search_len : len_after_start;       // to avoid searching out of bounds
-        char* end_bracket = search_len > 0 ? memchr(start_bracket, delim2, search_len) : NULL;             // Find ] after [, within max_search_len or msg len if shorter
-
+        char* end_bracket = search_len > 0 ? memchr(start_bracket, delim2, search_len) : NULL;          // Find ] after [, within max_search_len or msg len if shorter
 
         if (end_bracket == NULL) 
             return 2; // Unable to find end bracket
@@ -78,11 +76,9 @@ int MetaAndMsgFromText(char* text, char* meta_out, char* msg_out, char delims[2]
             else {
                 if ( CallocWtCheck(meta_out, strlen(token_meta) + 1, sizeof(char)) != 0 ) exit(EXIT_FAILURE);
                 printf("token_meta (%d):%s\n", strlen(token_meta), token_meta);
-
-                        puts("MAMFT before thing");
-                        
+                puts("MAMFT before thing");
                 strcpy(meta_out, token_meta);
-                    puts("MAMFT after thing");
+                puts("MAMFT after thing");
                 
                 // Found meta, look for msg               
                 token_msg = strtok(NULL, "");
@@ -91,7 +87,6 @@ int MetaAndMsgFromText(char* text, char* meta_out, char* msg_out, char delims[2]
                 else {
                     if ( CallocWtCheck(msg_out, strlen(token_msg) + 1, sizeof(char)) != 0 ) exit(EXIT_FAILURE);
                     strcpy(msg_out, token_msg);
-
                 }
             }
         }
