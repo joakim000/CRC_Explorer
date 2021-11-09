@@ -75,19 +75,7 @@
 
 
 /** Data structures **********************************************************/
-// Program fields
-typedef struct prog_s {
-    // Flags
-    uint8_t verbose;
-    uint8_t printMsg;
-    uint8_t printSteps;
-    uint8_t prt_noskip;
-    uint8_t prt_nogen;
-    uint8_t selfTest;
-    uint8_t timing;
-    uint8_t internal_engine;
-    uint8_t testMsg[9];
-} prog_t;
+
 
 #ifndef WIDE_CRC
 // CRC definition, serialized specs 
@@ -96,9 +84,9 @@ typedef struct crcdef_s {
         uint64_t specs[11];
 } crcdef_t;
 #else
+
 // Wide CRC definition, serialized specs 
 // Name   0 n   1 Gen           2 IL1   3 Init      4 Nondirect  5 RefIn  6 RefOut  7 XorOut         8 Residue           9 Check             10 AB              
-
 typedef struct crcdef_s {
         char name[0x80];
         uint64_t n; 
@@ -141,12 +129,28 @@ typedef struct implTest_s {
         bool passed_changed_msg;
 } implTest_t;
 
+
+// Program fields
+typedef struct prog_s {
+    // Flags
+    uint8_t verbose;
+    uint8_t printMsg;
+    uint8_t printSteps;
+    uint8_t prt_noskip;
+    uint8_t prt_nogen;
+    uint8_t selfTest;
+    uint8_t timing;
+    uint8_t internal_engine;
+    uint8_t testMsg[9];
+    char* engine_id;
+} prog_t;
+
 // Global access data structures
 extern prog_t* prog;
 // extern crc_t* crc;  
 // extern msg_t* msg;
 
-// Macros for readability and keystroke-saving
+// Aliases
 #define PROG (*prog)
 // #define  CRC (*crc)
 // #define  MSG (*msg)
@@ -154,31 +158,6 @@ extern prog_t* prog;
 
 
 
-/** Internal engine **********************************************************/
-/**
-  @brief Arrange bits in message according to CRC spec
-  @return  
-*/
-void ArrangeMsg(crc_t* crc, msg_t* msg);
-
-/**
-  @brief Get the remainder, aka the result, aka the "checksum"
-  @return  
-*/
-uint64_t GetRemInternal(crc_t* crc, msg_t* msg, uint64_t check);
-
-/**
-  @brief Main calculations and step-by-step printing
-  @return  
-*/
-uint64_t PolyDivision(crc_t* crc, msg_t* msg);
-
-/**
-  @brief Convert direct init value to non-direct
-  @return  Converted value
-*/
-uint64_t ConvertInit(uint64_t poly, uint64_t init, uint8_t width);
-/** end Internal engine ******************************************************/
 
 
 /** CRC specification control ************************************************/
@@ -276,3 +255,29 @@ void ValidPrint(uint8_t msg[], size_t msgSize, bool valid);
 */
 static short allocCheck(void* p);
 /** end Framework ************************************************************/
+
+/** Internal engine **********************************************************/
+/**
+  @brief Arrange bits in message according to CRC spec
+  @return  
+*/
+void ArrangeMsg(crc_t* crc, msg_t* msg);
+
+/**
+  @brief Get the remainder, aka the result, aka the "checksum"
+  @return  
+*/
+uint64_t GetRemInternal(crc_t* crc, msg_t* msg, uint64_t check);
+
+/**
+  @brief Main calculations and step-by-step printing
+  @return  
+*/
+uint64_t PolyDivision(crc_t* crc, msg_t* msg);
+
+/**
+  @brief Convert direct init value to non-direct
+  @return  Converted value
+*/
+uint64_t ConvertInit(uint64_t poly, uint64_t init, uint8_t width);
+/** end Internal engine ******************************************************/

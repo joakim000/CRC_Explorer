@@ -162,10 +162,10 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
 
     if (PROG.verbose && !table) { 
     // Diagnostic info
-        printf("     gBits: "); i2p(&crc->gBits, COUNT_OF(crc->gBits), crc->n+1, 0, 1);
+        // printf("     gBits: "); i2p(&crc->gBits, COUNT_OF(crc->gBits), crc->n+1, 0, 1);
         // if (VERBOSE || expected) printBits("Generator",  crc->gBits, COUNT_OF( crc->gBits ), crc->gBits_size);
-        printf("  initBits:  "); i2p(&crc->initBits, COUNT_OF(crc->initBits), crc->n, 0, 1);
-        printf("   xorBits:  "); i2p(&crc->xorBits, COUNT_OF(crc->xorBits), crc->n, 0, 1);
+        // printf("  initBits:  "); i2p(&crc->initBits, COUNT_OF(crc->initBits), crc->n, 0, 1);
+        // printf("   xorBits:  "); i2p(&crc->xorBits, COUNT_OF(crc->xorBits), crc->n, 0, 1);
     }
 }
 
@@ -212,8 +212,17 @@ implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
     uint64_t res;
 
     // Encode    
-    char* message = (char*)GetU8random(set_size, 255, NULL);
+    // char* message = (char*)GetRandomPrintable(set_size, 100, NULL);
+    char* message = (char*)GetDataLorem(0x1000, NULL);
+    // char* message = "A";
+
+
+    // printf("Message|%s|\n", message);
+
     msg_t* perf = PrepareMsg(crc, message);
+    #ifdef WIDE_CRC
+       perf->w_validation_rem = NULL;                
+    #endif
 
     timer_start = clock();
         perf->rem = GetRem_ptr(crc, perf, 0);
@@ -223,6 +232,10 @@ implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
     printf("  Encode: %10d chars in %6.3f seconds, %6.3f MiB/s.\n", perf->len, elapsed, perf->len / elapsed / 0x100000);
 
     // Validate
+    #ifdef WIDE_CRC
+       perf->w_validation_rem = perf->w_rem;                
+    #endif
+
     timer_start = clock();
         perf->rem = GetRem_ptr(crc, perf, perf->rem);
     timer_end = clock();
@@ -276,6 +289,8 @@ uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
     #else
         if (PROG.verbose) printf("ValueCheckTest. w_rem:%s  w_check:%s\n", test_msg->w_rem, crc->w_check);
         valid = ( (type == 0 && !strcmp(test_msg->w_rem, crc->w_check)) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
+        if (output == 2)
+            printf("%s: ", PROG.engine_id);
         // Print check value test result
         if (valid && output == 1) 
             printf("\e[1;32mPassed\e[m %s\n", crc->w_check);         // Show value
@@ -350,7 +365,7 @@ bool Validate(crc_t* crc, msg_t* msg) {
 void ValidPrint(uint8_t msg[], size_t msgSize, bool valid) {
     if (PRINTMSG) {
         if (msgSize < PRINTLIMIT)
-            printf("Message to validate:\t%s\n", msg);
+            printf("Message to validate:\t|%s|\n", msg);
         else
             printf("Message to validate:\t[%d characters]\n", msgSize);
     }
@@ -396,7 +411,7 @@ void ArrangeMsg(crc_t* crc, msg_t* msg) {
         // Write initbits into front padding
         for (int i = 0; i < crc->n; i++) 
             msg->msgBits[i] = initBits[i];
-        if(PROG.verbose) { printf("\ninitpad: %d  ", msg->initPad);  printf("msgBits (initBits written to frontpad): "); i82p(msg->msgBits, msg->paddedBitLen, 0, 0, 1); }
+        if(PROG.verbose) { printf("\ninitpad: %d\n", msg->initPad);  printf("msgBits (initBits written to frontpad): "); i82p(msg->msgBits, msg->paddedBitLen, 0, 0, 1); }
     }
 
     if (PROG.verbose) {printf("ArrangeMsg validation rem: %#llx\n", msg->validation_rem);}
@@ -463,7 +478,7 @@ void ArrangeMsg(crc_t* crc, msg_t* msg) {
         if(PROG.verbose) { 
             if (crc->n <= 64) printf("\nrem: %#llx  ", msg->validation_rem);
             else              printf("\nrem: %s  ", msg->w_validation_rem);  
-            printf("msgBits (remBits written to backpad): "); i82p(msg->msgBits, msg->paddedBitLen, 0, 0, 1); }
+            printf("msgBits (remBits written to backpad):\n"); i82p(msg->msgBits, msg->paddedBitLen, 0, 0, 1); }
     }
     #endif
 }

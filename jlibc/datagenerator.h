@@ -20,8 +20,9 @@ uint8_t* GetU8random(size_t set_size, size_t maxnum, uint8_t* error );
 
 void* GetU64linear(size_t set_size, uint8_t element_size, size_t start, uint8_t* error );
 
+char* GetRandomPrintable(size_t set_size, size_t maxnum, uint8_t* error );
 
-
+int32_t* GetRandomI32(size_t set_size, size_t maxnum, uint8_t* error );
 
 /**
   @brief 
@@ -32,7 +33,7 @@ void*  getDataMixed(size_t set_size, uint8_t element_size, size_t maxNum, size_t
   @brief 
   @return
 */
-void*  getDataLorem(size_t set_size, uint8_t* error );
+char*  GetDataLorem(size_t set_size, uint8_t* error );
 
 // Save data
 /**
@@ -79,6 +80,7 @@ static void generate_array(uint32_t *num, uint32_t size, uint32_t run_len, uint3
   @brief 
   @return
 */
+int32_t utils_rand(int32_t min, int32_t max);
 
 
 

@@ -86,6 +86,7 @@ void main(int argc, char* argv[] )
     
     PROG.internal_engine = (!EXTERNAL_ENGINE_AVAILABLE || ca.use_internal_engine) ? true : false;
     GetRem_ptr = PROG.internal_engine ? GetRemInternal : GetRem;
+    if (PROG.internal_engine) PROG.engine_id = "Engine 0"; else PROG.engine_id = EXPLORER_ENGINE_ID;
 
     // Check for a known command
     if (!ca.zoo && !ca.enc && !ca.validate && !ca.impl_test && !ca.perf_test) {
@@ -116,9 +117,11 @@ void main(int argc, char* argv[] )
     }
     // Commmand: Test performance
     if (ca.perf_test) {
+        // ImplPerf(crc, 0x40);
+        // ImplPerf(crc, 0x1000);
         ImplPerf(crc, 0x10000);
-        ImplPerf(crc, 0x100000);
-        ImplPerf(crc, 0x1000000);
+        // ImplPerf(crc, 0x100000);
+        // ImplPerf(crc, 0x1000000);
         // ImplPerf(crc, 0x8000000);
 
         exit(EXIT_SUCCESS);
@@ -185,20 +188,22 @@ void main(int argc, char* argv[] )
         char outStr[strlen(msg->msgStr) + strlen(csStr)];
         sprintf(outStr, "%s%s", csStr, msg->msgStr); 
         // puts(outStr);
-        if (ca.outFile != NULL) {
-            FILE* fp; 
-            fp = fopen((char*)ca.outFile, "w");
-            if (fp != NULL) {
-                fprintf(fp, outStr);
-                fclose(fp);
-            }
-        }
+        if ( WriteTextToFile(ca.outFile, outStr, true, NULL) == 1 ) 
+            PRINTERR("File write error.");
+        // if (ca.outFile != NULL) {
+        //     FILE* fp; 
+        //     fp = fopen((char*)ca.outFile, "w");
+        //     if (fp != NULL) {
+        //         fprintf(fp, outStr);
+        //         fclose(fp);
+        //     }
+        // }
 
         // Free allocations
         if (msg->msgStr != (char*)ca.msg)
-            free(msg->msgStr);
-        free(msg->msgBits);
-        free(msg);
+            if (msg->msgStr != NULL) free(msg->msgStr);
+        if (msg->msgBits != NULL) free(msg->msgBits);
+        if (msg != NULL) free(msg);
         exit(EXIT_SUCCESS);
     }
 
@@ -215,7 +220,7 @@ void main(int argc, char* argv[] )
         size_t max_search_len = MAX_HEXSTRING_LEN + 0x40;                                               // Allow some space for a note  
         char* start_bracket = memchr(message, '[', 1);                                                  // First char should be [
         size_t len_after_start = start_bracket == NULL ? 0 : strlen(start_bracket);                     // Msg len after bracket, 
-        uint8_t search_len = len_after_start > max_search_len ? max_search_len : len_after_start; // to avoid searching out of bounds
+        uint8_t search_len = len_after_start > max_search_len ? max_search_len : len_after_start;       // to avoid searching out of bounds
         char* end_bracket = search_len > 0 ? memchr(start_bracket, ']', search_len) : NULL;             // Find ] after [, within max_search_len or msg len if shorter
 
         if (end_bracket != NULL) {

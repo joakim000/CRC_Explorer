@@ -27,7 +27,7 @@ char* ReadTextFromFile(char filename[], size_t max_readlength, bool verbose, uin
             PRINTERR("File read error.")
             if (error != NULL) *error = 2;
             fclose(fp);
-            free(fcontent);
+            if (fcontent != NULL) free(fcontent);
             return NULL;
         }
         fclose(fp);
@@ -35,5 +35,21 @@ char* ReadTextFromFile(char filename[], size_t max_readlength, bool verbose, uin
         if (verbose) printf("%d characters read.\n", strlen(fcontent));
         if (error != NULL) *error = 0;
         return fcontent;
+    }
+}
+
+int WriteTextToFile(char filename[], char text[], bool verbose, uint8_t* error) {
+    if (filename != NULL) {
+        FILE* fp; 
+        fp = fopen((char*)filename, "w");
+        if (fp == NULL) {
+            if (error != NULL) *error = 1;
+            return 1;
+        }
+        else {
+            fprintf(fp, text);
+            fclose(fp);
+            return 0;
+        }
     }
 }

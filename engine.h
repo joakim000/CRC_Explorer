@@ -2,7 +2,7 @@
   @brief API for validating CRC implementations
 
   1. Uncomment the line
-     #define CRC_EXPLORER_EXTERNAL
+     #define EXPLORER_ENGINE_ID "Engine 1"
   2. Put your implementation inside the function GetRem (engine.c). 
   3. It will receive message deta and CRC definition as struct params.
   4. It should return the remainder of the calculation as an uint64_t.
@@ -12,8 +12,9 @@
 
 *********************************************************************/
 // Uncomment this to enable external engine
-// #define CRC_EXPLORER_EXTERNAL
+#define EXPLORER_ENGINE_ID "Engine 1"
 
+// Experimental 
 #define WIDE_CRC
 
 #include <stdint.h>

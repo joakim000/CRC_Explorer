@@ -5,11 +5,38 @@
 ## Deb
 
 * Read files (too many chars)                    Garbage chars in input              files.c
+PS R:\code\CRC_Explorer> ./crc val -in troll.txt
+CRC-8/SMBUS   Poly:0x7   IL1:Yes   Init:No   NDI:No   XorOut:No   RefIn:No   RefOut:No
+Passed check value-test for CRC-8/SMBUS; matching 0xf4
+Reading file troll.txt  ...  21 characters read.
+Checksum:               0x49     CRC-8/SMBUS
+Message to validate:    ABF
+The data is OK
+
+joakim@Porcelina:/mnt/r/code/CRC_Explorer$ ./crc val -in troll.txt
+CRC-8/SMBUS   Poly:0x7   IL1:Yes   Init:No   NDI:No   XorOut:No   RefIn:No   RefOut:No
+Passed check value-test for CRC-8/SMBUS; matching 0xf4
+Reading file troll.txt  ...  22 characters read.
+Checksum:               0x49     CRC-8/SMBUS
+Message to validate:    ABF
+The data is not OK
+
+* Intermittent perf validation errors
+CRC-82/DARC   Poly:0x0308c0111011401440411   IL1:Yes   Init:0x00   NDI:No   XorOut:0x00   RefIn:Yes   RefOut:Yes
+Passed check value-test for CRC-82/DARC; matching 0x09ea83f625023801fd612
+Reading file ./assets/lorem32k.asc  ...  33990 characters read.
+  Encode:      33990 chars in  0.016 seconds,  2.075 MiB/s.
+Validate:      33990 chars in  0.000 seconds,    inf MiB/s. Failed.
+joakim@Porcelina:/mnt/r/code/CRC_Explorer$ ./crc perf -c 63
+CRC-82/DARC   Poly:0x0308c0111011401440411   IL1:Yes   Init:0x00   NDI:No   XorOut:0x00   RefIn:Yes   RefOut:Yes
+Passed check value-test for CRC-82/DARC; matching 0x09ea83f625023801fd612
+Reading file ./assets/lorem32k.asc  ...  33990 characters read.
+  Encode:      33990 chars in  0.000 seconds,    inf MiB/s.
+Validate:      33990 chars in  0.016 seconds,  2.075 MiB/s. Passed.
 
 ## Both
 
 * Read files, constant read size  (set to 16M)                                       files.c
-
 
 * To many chars read
 PS R:\code\CRC_Explorer> .\crc enc -t -in .\assets\lorem32k.txt -out test.txt

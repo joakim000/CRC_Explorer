@@ -60,11 +60,12 @@ clean :
 #		powershell rm jlibc/*.o
 #	else
 #	clean ::
-		rm -f crc *.exe *.o jlibc/*.o
+#		rm -rf crc
+		rm -f *.o jlibc/*.o
 #	endif
 	
 .PHONY : winclean
 winclean : 
-	powershell rm *.exe 
+#	powershell rm *.exe 
 	powershell rm *.o
 	powershell rm jlibc/*.o
