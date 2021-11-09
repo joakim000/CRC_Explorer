@@ -2,7 +2,7 @@
   @brief API for validating CRC implementations
 
   1. Uncomment the line
-     #define CRC_EXPLORER_EXTERNAL
+     #define EXPLORER_ENGINE_ID "Engine 1"
   2. Put your implementation inside the function GetRem (engine.c). 
   3. It will receive message deta and CRC definition as struct params.
   4. It should return the remainder of the calculation as an uint64_t.
@@ -12,7 +12,9 @@
 
 *********************************************************************/
 // Uncomment this to enable external engine
-// #define CRC_EXPLORER_EXTERNAL
+
+// Experimental 
+#define WIDE_CRC
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -20,6 +22,7 @@
 
 typedef struct crc_s crc_t;
 typedef struct msg_s msg_t;
+extern char* engine_id;
 
 /**
 *  @brief Get remainder from CRC calculation
@@ -76,7 +79,7 @@ typedef struct crc_s {
                          //   Generally true, but provided because exceptions
                          //   do exist (example: CRC-15/CAN*).
     /************************************************************************************/
-    //  * This spec I've later found be incorrect, the real CRC-15/CAN also using 
+    //  * This spec I've later found to be incorrect, the real CRC-15/CAN also using 
     //  implicit leading 1. So this flag exists, should anyone need it, but can
     //  probably be safely ignored (assumed true).  
 
@@ -91,6 +94,25 @@ typedef struct crc_s {
     uint8_t gBits[65];
     uint8_t initBits[64];
     uint8_t xorBits[64];
+
+    // Wide CRC support
+    #ifdef WIDE_CRC
+    char w_g[35];          // Generator polynomial
+    char w_init[35];       // Initial CRC value, also known as seed.
+    char w_xor[35];        // Final XOR; XOR result with this value after calculation
+    char w_residue[35];    // Given as spec on some sites, not sure what it's used for yet.
+    char w_check[35];      // Expected result from "123456789"
+    char w_checkAB[35];    // Expected result from "AB"
+    char w_init_conv[35];  // Converted initial CRC value (seed)
+    
+    uint8_t hex_orders;
+
+    // Work arrays
+    uint8_t w_gBits[129];
+    uint8_t w_initBits[128];
+    uint8_t w_xorBits[128];
+    uint8_t w_initBits_conv[128];  // Converted initial CRC value (seed)
+    #endif
 } crc_t;
 
 
@@ -117,9 +139,14 @@ typedef struct msg_s {
     size_t originalBitLen;     
     size_t paddedBitLen;  
     size_t initPad;   
+
+    #ifdef WIDE_CRC
+    // Wide validation    
+    char w_rem[35];
+    uint8_t w_remBits[128];
+    char* w_validation_rem;
+    #endif
+
 } msg_t;
-
-
-
 
 

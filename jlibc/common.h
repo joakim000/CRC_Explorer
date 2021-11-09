@@ -11,6 +11,13 @@
 #ifndef BITSINBYTE
 #define BITSINBYTE 8
 #endif
+#ifndef NIBBLE
+#define NIBBLE 4
+#endif
+
+#ifndef HEXCHARS
+#define HEXCHARS "xX0123456789abcdefABCDEF"
+#endif
 
 // Utility
 #ifndef COUNT_OF
@@ -28,6 +35,9 @@
 #ifndef CROPSTR
 #define CROPSTR(x, y) char y[strlen((char*)x)+1]; strcpy(y,(char*)x);
 #endif
+
+
+
 
 // Timing
 #ifndef TIMING
@@ -53,3 +63,11 @@
 #define GENRAND(x) (rand() % x)     // Hope that it works
 #endif
 #endif
+
+short AllocCheck(void* p);
+
+// #ifndef CALLOCOREXIT
+// #define CALLOCOREXIT(x, y, z) if(CallocWtCheck(x, y, z) != 0) exit(EXIT_FAILURE);
+// #endif
+short CallocWtCheck(void* p, size_t elements, size_t element_size);
+

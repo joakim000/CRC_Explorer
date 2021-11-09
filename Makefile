@@ -15,7 +15,7 @@ CFLAGS = -std=c11 -O3
 endif
 endif
 
-objects = main.o crc.o engine.o jlibc/binutils.o jlibc/cmdargs.o jlibc/datagenerator.o jlibc/files.o 
+objects = main.o crc.o engine.o jlibc/binutils.o jlibc/cmdargs.o jlibc/common.o jlibc/datagenerator.o jlibc/files.o 
 
 
 extra : $(objects)
@@ -34,6 +34,8 @@ binutils.o : jlibc/binutils.c jlibc/binutils.h jlibc/common.h
 	cc -c $(CFLAGS) jlibc/binutils.c
 cmdargs.o : jlibc/cmdargs.c jlibc/cmdargs.h jlibc/common.h
 	cc -c $(CFLAGS) jlibc/cmdargs.c
+common.o : jlibc/common.c jlibc/common.h
+	cc -c $(CFLAGS) jlibc/common.c	
 #da.o :  jlibc/da.c jlibc/da.h jlibc/common.h
 #	cc -c $(CFLAGS) jlibc/da.c
 files.o : jlibc/files.c jlibc/files.h  jlibc/common.h 
@@ -60,11 +62,12 @@ clean :
 #		powershell rm jlibc/*.o
 #	else
 #	clean ::
-		rm -f crc *.exe *.o jlibc/*.o
+#		rm -rf crc
+		rm -f *.o jlibc/*.o
 #	endif
 	
 .PHONY : winclean
 winclean : 
-	powershell rm *.exe 
+#	powershell rm *.exe 
 	powershell rm *.o
 	powershell rm jlibc/*.o

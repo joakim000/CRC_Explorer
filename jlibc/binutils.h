@@ -6,6 +6,27 @@
 #include "common.h"
 
 
+//* Hexstring conversions *//
+
+/**
+ @brief Convert a hex-string to array of bit values 
+ @note Variants for Most / Least Significant First 
+ @example
+*/
+void hexstr2bitsMSF(size_t const bits, char hexstr[], uint8_t out[], bool extraBit);
+void hexstr2bitsLSF(size_t const bits, char hexstr[], uint8_t out[], bool extraBit);
+
+/**
+ @brief Convert an array of bit values to a hex-string
+ @note Variants for Most / Least Significant First 
+ @example
+*/
+void bits2hexstrMSF(size_t const size, uint8_t* bits,  char out[]);
+void bits2hexstrLSF(size_t const size, uint8_t* bits,  char out[]);
+
+//* end Hexstring conversions *//
+
+
 /**
  @brief Convert a single int to array of bit values 
  @note Variants for Most / Least Significant First 
@@ -20,14 +41,12 @@ void int2bitsLSF(size_t const size, void const * const ptr, uint8_t out[], bool 
 /**
  @brief Convert an array of bit values to a single int 
  @note Variants for Most / Least Significant First 
- @return Converted int as uint32_t 
- @example
-    // bitArray holds array of bit values
-    // size is length of bitArray
-    bits2int(size, bitArray));
+ @return Converted int as uint32_t
+ @param bits array of bitvalues
+ @param size count of bits
 */
-uint64_t bits2intMSF(size_t const len, uint8_t* bits);
-uint64_t bits2intLSF(size_t const len, uint8_t* bits);
+uint64_t bits2intMSF(size_t const size, uint8_t* bits);
+uint64_t bits2intLSF(size_t const size, uint8_t* bits);
 
 
 /**

@@ -4,29 +4,49 @@
 */
 #include "datagenerator.h"
 #include "common.h"
+#include "files.h"
 
-
-uint64_t* GetU64random(size_t set_size, size_t maxnum, uint8_t* error ) {
+uint64_t* GetRandomU64(size_t set_size, size_t maxnum, uint8_t* error ) {
     srand(time(0));
     uint64_t* random = calloc(set_size, sizeof(uint64_t));
         assert( ("Memory allocation failed.", random != NULL) );
     for (size_t i = 0; i < set_size; i++) 
             random[i] = (uint64_t)GENRAND(maxnum);
+            // random[i] = utils_rand(0, UINT64_MAX);
     return random;
 }
-uint8_t* GetU8random(size_t set_size, size_t maxnum, uint8_t* error ) {
+
+int32_t* GetRandomI32(size_t set_size, size_t maxnum, uint8_t* error ) {
+    srand(time(0));
+    uint32_t* random = calloc(set_size, sizeof(uint64_t));
+        assert( ("Memory allocation failed.", random != NULL) );
+    for (size_t i = 0; i < set_size; i++) 
+            // random[i] = (uint64_t)GENRAND(maxnum);
+            random[i] = utils_rand(INT32_MIN, INT32_MAX);
+    return random;
+}
+
+
+uint8_t* GetRandomU8(size_t set_size, size_t maxnum, uint8_t* error ) {
     srand(time(0));
     uint8_t* random = calloc(set_size+1, sizeof(uint8_t));
         assert( ("Memory allocation failed.", random != NULL) );
     for (size_t i = 0; i < set_size; i++) 
-            random[i] = (uint8_t)GENRAND(maxnum);
-
-    for I2(set_size) if (random[i] == 0) random[i]++;
+            random[i] = utils_rand(0, 255);
+    random[set_size] = '\0';
+    return random;
+}
+char* GetRandomPrintable(size_t set_size, uint8_t* error ) {
+    srand(time(0));
+    uint8_t* random = calloc(set_size+1, sizeof(uint8_t));
+        assert( ("Memory allocation failed.", random != NULL) );
+    for (size_t i = 0; i < set_size; i++) 
+            random[i] = utils_rand(32, 126);
     random[set_size] = '\0';
     return random;
 }
 
-void* GetU64linear(size_t set_size, uint8_t element_size, size_t start, uint8_t* error ) {
+void* GetLinearU64(size_t set_size, uint8_t element_size, size_t start, uint8_t* error ) {
     uint64_t* linear = calloc(set_size, sizeof(uint64_t));
         assert( ("Memory allocation failed.", linear != NULL) );
     for (size_t i = 0; i < set_size; i++) 
@@ -34,11 +54,11 @@ void* GetU64linear(size_t set_size, uint8_t element_size, size_t start, uint8_t*
     return linear;
 }
 
-void*  getDataMixed(size_t set_size, uint8_t element_size, size_t maxNum, size_t run_length, uint8_t* error ) {
+void*  GetDataMixed(size_t set_size, uint8_t element_size, size_t maxNum, size_t run_length, uint8_t* error ) {
     
 }
 
-void* getDataLorem(size_t set_size, uint8_t* error) {
+char* GetDataLorem(size_t set_size, uint8_t* error) {
 
     size_t count = set_size / 0x8000;
     char* lorem = calloc(count*0x8000, sizeof(char));
@@ -47,29 +67,13 @@ void* getDataLorem(size_t set_size, uint8_t* error) {
     // for (size_t i = 0; i < set_size; i++)
     //     sprintf(lorem, LOREM2237);   
 
-        char filename[] = "./lorem/lorem32k.txt";
-        FILE* fp; 
-        char buf[0x400];
-        size_t elementsRead;
-        size_t totalRead = 0;
-        fp = fopen(filename, "r");
-        if (fp != NULL) {
-            // printf("Reading file %s  ...  ", ca.inFile);
-            while ((elementsRead = fread(buf, 1, sizeof buf, fp)) > 0 && totalRead < 0x8000)
-                strcat(lorem, buf);
-            if (ferror(fp)) {
-                PRINTERR("File read error, exiting.");
-                fclose(fp);
-                exit(EXIT_FAILURE);
-            }
-            fclose(fp);
-            strcat(lorem, "\0");
-            printf("%d characters read.\n", strlen(lorem));
-            
-        }
-        else 
-            PRINTERR("File not found."); 
+    char filename[] = "./assets/lorem32k.asc";
+    uint8_t file_error;
+    ReadTextFromFile(filename, 0x10000, true, &file_error);
+    if (file_error < 0) 
+        PRINTERR("\nFile read error.\n");
 }
+
 
 void*    writeLorem(size_t set_size, char filename[FILENAME_MAX], uint8_t* error) {
     
@@ -242,3 +246,69 @@ double timeComp(double libTime, double sortTime) {
 }
 
 
+// #include <assert.h>
+// #include <stdbool.h>
+// #include <stdlib.h>
+// https://stackoverflow.com/questions/822323/how-to-generate-a-random-int-in-c/67746081#67746081
+/// \brief      Use linear interpolation to rescale, or "map" value `val` from range
+///             `in_min` to `in_max`, inclusive, to range `out_min` to `out_max`, inclusive.
+/// \details    Similar to Arduino's ingenious `map()` function:
+///             https://www.arduino.cc/reference/en/language/functions/math/map/
+///
+/// TODO(gabriel): turn this into a gcc statement expression instead to prevent the potential for
+/// the "double evaluation" bug. See `MIN()` and `MAX()` above.
+#define UTILS_MAP(val, in_min, in_max, out_min, out_max) \
+    (((val) - (in_min)) * ((out_max) - (out_min)) / ((in_max) - (in_min)) + (out_min))
+
+/// \brief      Obtain a pseudo-random integer value between `min` and `max`, **inclusive**.
+/// \details    1. If `(max - min + 1) > RAND_MAX`, then the range of values returned will be
+///             **scaled** to the range `max - min + 1`, and centered over the center of the
+///             range at `(min + max)/2`. Scaling the numbers means that in the case of scaling,
+///             not all numbers can even be reached. However, you will still be assured to have
+///             a random distribution of numbers across the full range.
+///             2. Also, the first time per program run that you call this function, it will
+///             automatically seed the pseudo-random number generator with your system's
+///             current time in seconds.
+/// \param[in]  min         The minimum pseudo-random number you'd like, inclusive. Can be positive
+///                         OR negative.
+/// \param[in]  max         The maximum pseudo-random number you'd like, inclusive. Can be positive
+///                         OR negative.
+/// \return     A pseudo-random integer value between `min` and `max`, **inclusive**.
+/// @example    const int MIN = 1;
+///             const int MAX = 1024;
+///             int random_num = utils_rand(MIN, MAX);
+
+int32_t utils_rand(int32_t min, int32_t max)
+{
+    static bool first_run = true;
+    if (first_run)
+    {
+        // seed the pseudo-random number generator with the seconds time the very first run
+        time_t time_now_sec = time(NULL);
+        srand(time_now_sec);
+        first_run = false;
+    }
+
+    int32_t range = max - min + 1;
+    int32_t random_num = rand();  // random num from 0 to RAND_MAX, inclusive
+
+    if (range > RAND_MAX)
+    {
+        static_assert(
+            sizeof(int64_t) > sizeof(int32_t),
+            "This must be true or else the below mapping/scaling may have undefined overflow "
+            "and not work properly. In such a case, try casting to `long int64_t` instead of "
+            "just `int64_t`, and update this static_assert accordingly.");
+
+        random_num = UTILS_MAP((int64_t)random_num, (int64_t)0, (int64_t)RAND_MAX, (int64_t)min,
+                               (int64_t)max);
+        return random_num;
+    }
+
+    // This is presumably a faster approach than the map/scaling function above, so do this faster
+    // approach below whenever you don't **have** to do the more-complicated approach above.
+    random_num %= range;
+    random_num += min;
+
+    return random_num;
+}
