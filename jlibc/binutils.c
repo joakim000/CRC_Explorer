@@ -193,15 +193,18 @@ void hexstr2bitsMSF(size_t const bits, char hexstr[], uint8_t out[], bool extraB
            s1[j] = hexstr[i];
     
     // Now we have 2 strings, convert to ints
-    i1 = strtol(s1, NULL, 16);
-    if (strlen(s2) > 0) i2 = strtol(s2, NULL, 16);
+    i1 = strtoull(s1, NULL, 16);
+    if (strlen(s2) > 0) i2 = strtoull(s2, NULL, 16);
+
+    // printf("s1:%s      s2:%s\n", s1, s2);
+    // printf("i1:%#llx   i2:%#llx\n", i1, i2);
 
     // Process first part
     byte = (uint8_t*)&i1;
     for (byte_index = bytes-1; byte_index >= 0; byte_index--) {   //MSF
        bit_write_index = 0;
        for (bit_index = 7; bit_index >= 0; bit_index--) {         // MSF
-           bit = (byte[byte_index] >> bit_index) & 1;
+           bit = (byte[byte_index] >> bit_index) & 1ULL;
            out[byte_write_index * 8 + bit_write_index++ + displace] = 
            bit ? 1 : 0;
        }
@@ -213,7 +216,7 @@ void hexstr2bitsMSF(size_t const bits, char hexstr[], uint8_t out[], bool extraB
         for (byte_index = bytes-1; byte_index >= 0; byte_index--) {   //MSF
         bit_write_index = 0;
         for (bit_index = 7; bit_index >= 0; bit_index--) {         // MSF
-            bit = (byte[byte_index] >> bit_index) & 1;
+            bit = (byte[byte_index] >> bit_index) & 1ULL;
             out[byte_write_index * 8 + bit_write_index++ + displace] = 
             bit ? 1 : 0;
         }
