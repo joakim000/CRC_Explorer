@@ -32,25 +32,21 @@ uint8_t* GetRandomU8(size_t set_size, size_t maxnum, uint8_t* error ) {
     uint8_t* random = calloc(set_size+1, sizeof(uint8_t));
         assert( ("Memory allocation failed.", random != NULL) );
     for (size_t i = 0; i < set_size; i++) 
-            // random[i] = (uint8_t)GENRAND(maxnum);
             random[i] = utils_rand(0, 255);
-    // for I2(set_size) if (random[i] <90) random[i]++;
     random[set_size] = '\0';
     return random;
 }
-char* GetRandomPrintable(size_t set_size, size_t maxnum, uint8_t* error ) {
+char* GetRandomPrintable(size_t set_size, uint8_t* error ) {
     srand(time(0));
     uint8_t* random = calloc(set_size+1, sizeof(uint8_t));
         assert( ("Memory allocation failed.", random != NULL) );
     for (size_t i = 0; i < set_size; i++) 
-            // random[i] = (uint8_t)GENRAND(maxnum);
             random[i] = utils_rand(32, 126);
-    // for I2(set_size) if (random[i] <90) random[i]++;
     random[set_size] = '\0';
     return random;
 }
 
-void* GetU64linear(size_t set_size, uint8_t element_size, size_t start, uint8_t* error ) {
+void* GetLinearU64(size_t set_size, uint8_t element_size, size_t start, uint8_t* error ) {
     uint64_t* linear = calloc(set_size, sizeof(uint64_t));
         assert( ("Memory allocation failed.", linear != NULL) );
     for (size_t i = 0; i < set_size; i++) 
@@ -58,7 +54,7 @@ void* GetU64linear(size_t set_size, uint8_t element_size, size_t start, uint8_t*
     return linear;
 }
 
-void*  getDataMixed(size_t set_size, uint8_t element_size, size_t maxNum, size_t run_length, uint8_t* error ) {
+void*  GetDataMixed(size_t set_size, uint8_t element_size, size_t maxNum, size_t run_length, uint8_t* error ) {
     
 }
 
@@ -76,31 +72,6 @@ char* GetDataLorem(size_t set_size, uint8_t* error) {
     ReadTextFromFile(filename, 0x10000, true, &file_error);
     if (file_error < 0) 
         PRINTERR("\nFile read error.\n");
-
-
-
-        // char filename[] = "./jlibc/lorem32k.asc";
-        // FILE* fp; 
-        // char buf[0x400];
-        // size_t elementsRead;
-        // size_t totalRead = 0;
-        // fp = fopen(filename, "r");
-        // if (fp != NULL) {
-        //     // printf("Reading file %s  ...  ", ca.inFile);
-        //     while ((elementsRead = fread(buf, 1, sizeof buf, fp)) > 0 && totalRead < 0x8000)
-        //         strcat(lorem, buf);
-        //     if (ferror(fp)) {
-        //         PRINTERR("File read error, exiting.");
-        //         fclose(fp);
-        //         exit(EXIT_FAILURE);
-        //     }
-        //     fclose(fp);
-        //     strcat(lorem, "\0");
-        //     printf("%d characters read.\n", strlen(lorem));
-            
-        // }
-        // else 
-        //     PRINTERR("File not found."); 
 }
 
 

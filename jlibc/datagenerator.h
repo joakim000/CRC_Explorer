@@ -11,16 +11,16 @@
   @brief 
   @return
 */
-uint64_t* GetU64random(size_t set_size, size_t maxnum, uint8_t* error );
+uint64_t* GetRandomU64(size_t set_size, size_t maxnum, uint8_t* error );
 /**
   @brief 
   @return
 */
-uint8_t* GetU8random(size_t set_size, size_t maxnum, uint8_t* error );
+uint8_t* GetRandomU8(size_t set_size, size_t maxnum, uint8_t* error );
 
-void* GetU64linear(size_t set_size, uint8_t element_size, size_t start, uint8_t* error );
+void* GetLinearU64(size_t set_size, uint8_t element_size, size_t start, uint8_t* error );
 
-char* GetRandomPrintable(size_t set_size, size_t maxnum, uint8_t* error );
+char* GetRandomPrintable(size_t set_size, uint8_t* error );
 
 int32_t* GetRandomI32(size_t set_size, size_t maxnum, uint8_t* error );
 
@@ -28,7 +28,7 @@ int32_t* GetRandomI32(size_t set_size, size_t maxnum, uint8_t* error );
   @brief 
   @return
 */
-void*  getDataMixed(size_t set_size, uint8_t element_size, size_t maxNum, size_t run_length, uint8_t* error );
+void*  GetDataMixed(size_t set_size, uint8_t element_size, size_t maxNum, size_t run_length, uint8_t* error );
 /**
   @brief 
   @return
