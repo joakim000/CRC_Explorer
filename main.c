@@ -121,15 +121,15 @@ void main(int argc, char* argv[] )
         // ImplPerf(crc, 0x40);
         // ImplPerf(crc, 0x1000);
         ImplPerf(crc, 0x10000);
-        // ImplPerf(crc, 0x100000);
-        // ImplPerf(crc, 0x1000000);
+        ImplPerf(crc, 0x100000);
+        ImplPerf(crc, 0x1000000);
         // ImplPerf(crc, 0x8000000);
 
         exit(EXIT_SUCCESS);
     }
 
     // Commands below this point require a message. Try to find one, else exit.
-    char* message;
+    char* message = NULL;
     // In command line?
     if (strlen((char*)ca.msg) > 0 ) 
         message = ca.msg;
@@ -142,7 +142,7 @@ void main(int argc, char* argv[] )
         }
     }
     // Still no message?
-    if (strlen(message) < 1 ) {
+    if (message == NULL) {
         PRINTERR("No message, exiting.\n");
         exit(EXIT_FAILURE);
     }

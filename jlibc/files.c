@@ -12,7 +12,7 @@ char* ReadTextFromFile(char filename[], size_t max_readlength, bool verbose, uin
 
     fp = fopen((char*)filename, "r");
     if (fp == NULL) {
-        PRINTERR("File not found.");
+        PRINTERR("File not found.\n");
         if (error != NULL) *error = 1;
         free(fcontent);
         return NULL;
@@ -21,10 +21,10 @@ char* ReadTextFromFile(char filename[], size_t max_readlength, bool verbose, uin
         if (verbose) printf("Reading file %s  ...  ", filename);
         while ( (totalRead + buf_size < max_readlength) && (elementsRead = fread(buf, 1, sizeof buf, fp) ) > 0 ) {
             totalRead += elementsRead;
-            strcat(fcontent, buf);
+            strncat(fcontent, buf, elementsRead);
         }
         if (ferror(fp)) {
-            PRINTERR("File read error.")
+            PRINTERR("File read error.\n")
             if (error != NULL) *error = 2;
             fclose(fp);
             if (fcontent != NULL) free(fcontent);
