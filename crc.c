@@ -81,8 +81,9 @@ void LoadDef(crcdef_t zoo[], size_t index, crc_t* crc) {
 
         // Convert generator polynomial to array of bit values  
         hexstr2bitsMSF(16, crc->w_g, crc->w_gBits, true);
-        if (crc->il1) crc->w_gBits[COUNT_OF(crc->w_gBits)-1-crc->n] = 1;
         // printBits("      Poly converted", crc->w_gBits, COUNT_OF(crc->w_gBits), 0);
+        if (crc->il1) crc->w_gBits[COUNT_OF(crc->w_gBits)-1-crc->n] = 1;
+        // printBits("         Poly il1:ed", crc->w_gBits, COUNT_OF(crc->w_gBits), 0);
 
         // If needed, convert direct init to non-direct
         if (!crc->nondirect && crc->w_init == 0) 
@@ -210,12 +211,12 @@ implTest_t ImplValid(crc_t* crc) {
 implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
     implTest_t test;
     uint64_t res;
+    bool freeMsg;
 
     // Encode    
-    // char* message = (char*)GetRandomPrintable(set_size, 100, NULL);
-    char* message = (char*)GetDataLorem(0x1000, NULL);
-    // char* message = "A";
-
+    char* message = (char*)GetRandomPrintable(set_size, NULL); freeMsg = true;
+    // char* message = (char*)GetDataLorem(0x1000, NULL); freeMsg = true;
+    // char* message = "A"; freeMsg = false;
 
     // printf("Message|%s|\n", message);
 
@@ -246,7 +247,7 @@ implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
     test.passed_validate_msg ? printf("\e[1;32mPassed.\e[m\n") : printf("\e[1;31mFailed.\e[m\n");
 
     // Free
-    if (perf->msgStr != NULL) free(perf->msgStr);
+    if (freeMsg) if (perf->msgStr != NULL) free(perf->msgStr);
     if (perf->msgBits != NULL) free(perf->msgBits);
     if (perf != NULL) free(perf);
 }
