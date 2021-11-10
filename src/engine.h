@@ -12,7 +12,7 @@
 
 *********************************************************************/
 // Uncomment this to enable external engine
-// #define EXPLORER_ENGINE Pontus_1
+#define EXPLORER_ENGINE Pontus_1
 #define EXPLORER_ENGINE_ID 1
 
 // Experimental 
