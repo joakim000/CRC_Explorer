@@ -36,6 +36,8 @@
 #define CROPSTR(x, y) char y[strlen((char*)x)+1]; strcpy(y,(char*)x);
 #endif
 
+#define XSTR(x) STR(x)
+#define STR(x) #x
 
 
 

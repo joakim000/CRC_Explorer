@@ -112,11 +112,13 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
             if (crc->init) sprintf(prt_init, "%#18llx", crc->init);
             if (crc->xor) sprintf(prt_xor, "%#18llx", crc->xor);
         }
+        #ifdef WIDE_CRC
         else {
             strcpy(prt_g, crc->w_g);
             strcpy(prt_init, crc->w_init);
             strcpy(prt_xor, crc->w_xor);
         }
+        #endif
         char* prt_nondirect = crc->nondirect ? "X" : " "; 
         char* prt_il1 = crc->il1 ? "X" : " "; 
         char* prt_refIn = crc->inputLSF ? "X" : " "; 
@@ -136,11 +138,13 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
             if (crc->init) sprintf(prt_init, "%#llx", crc->init);
             if (crc->xor) sprintf(prt_xor, "%#llx", crc->xor);
         }
+        #ifdef WIDE_CRC
         else {
             strcpy(prt_g, crc->w_g);
             strcpy(prt_init, crc->w_init);
             strcpy(prt_xor, crc->w_xor);
         }
+        #endif
         char* prt_nondirect = crc->nondirect ? "Yes" : "No"; 
         char* prt_il1 = crc->il1 ? "Yes" : "No"; 
         char* prt_refIn = crc->inputLSF ? "Yes" : "No"; 
@@ -171,7 +175,7 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
 }
 
 void ZooTour(crcdef_t zoo[], size_t zoo_size) {
-    printf("\e[1;53m\e[1;1m\e[1;7mCRC Explorer\e[1;27m\e[1;23m\e[m\t\e[1;3mEngine ID:\e[m %s\n", PROG.engine_id);   
+    printf("\e[1;53m\e[1;1m\e[1;7mCRC Explorer\e[1;27m\e[1;23m\e[m\t\e[1;3mEngine:\e[m %s\n", PROG.engine_id);   
     printf("\e[1;3m\e[1;4m%5s %-18s %18s   %18s %4s %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value               ");
     // printf("\e[1;3m\e[1;4m%5s %-18s %18s %4s %19s %4s   %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "IL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value              "); // Med IL1
     for (int i = 0; i < zoo_size; i++) {
@@ -275,6 +279,8 @@ uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
     }
 
     bool valid = false;
+    if (output == 2)
+            printf("Engine:\t\t%s\n", PROG.engine_id);
     #ifndef WIDE_CRC
         valid = ( (type == 0 && test_msg->rem == crc->check) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
         // Print check value test result
@@ -290,9 +296,10 @@ uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
             printf("\e[1;31m\e[1;5mFailed\e[1;25m check value-test for %s;\e[m result %#0llx != check %#0llx\n", crc->description, test_msg->rem, crc->check); 
     #else
         if (PROG.verbose) printf("ValueCheckTest. w_rem:%s  w_check:%s\n", test_msg->w_rem, crc->w_check);
-        valid = ( (type == 0 && !strcmp(test_msg->w_rem, crc->w_check)) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
-        if (output == 2)
-            printf("Engine id:\t%s\n", PROG.engine_id);
+        if (crc->n <= 64)
+            valid = ( (type == 0 && test_msg->rem == crc->check) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
+        else
+            valid = ( (type == 0 && !strcmp(test_msg->w_rem, crc->w_check)) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
         // Print check value test result
         if (valid && output == 1) 
             printf("\e[1;32mPassed\e[m %s\n", crc->w_check);         // Show value
@@ -582,10 +589,11 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
             rem = (uint64_t)bits2intLSF(COUNT_OF(remBits), remBits);
         else
             rem = (uint64_t)bits2intMSF(COUNT_OF(remBits), remBits);
+        #ifdef WIDE_CRC
         char fmt[10];
         sprintf(fmt, "%%#0%dllx", crc->hex_orders + 2);
         sprintf(msg->w_rem, fmt, rem);
-        // if (PROG.verbose) printf("Remainder: %#llx\n", rem);
+        #endif
     }
     #ifdef WIDE_CRC
     else {

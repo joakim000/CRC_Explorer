@@ -1,9 +1,9 @@
 /** Engine for CRC Explorer ******************************************
   @brief API for validating CRC implementations
 
-  1. Uncomment the line
-     #define EXPLORER_ENGINE_ID "Engine 1"
-  2. Put your implementation inside the function GetRem (engine.c). 
+  1. Define EXPLORER_ENGINE as your function, like so:
+     #define EXPLORER_ENGINE My_CRC_Function
+  2. Place your function in engine.c 
   3. It will receive message deta and CRC definition as struct params.
   4. It should return the remainder of the calculation as an uint64_t.
   5. For validation the CRC value is received as an uint64_t.
@@ -12,6 +12,8 @@
 
 *********************************************************************/
 // Uncomment this to enable external engine
+// #define EXPLORER_ENGINE Pontus_1
+#define EXPLORER_ENGINE_ID 1
 
 // Experimental 
 #define WIDE_CRC
@@ -22,7 +24,6 @@
 
 typedef struct crc_s crc_t;
 typedef struct msg_s msg_t;
-extern char* engine_id;
 
 /**
 *  @brief Get remainder from CRC calculation
@@ -55,7 +56,7 @@ extern char* engine_id;
 *                if you have use for them. See definitions
 *                of crc_t and msg_t.
 */
-uint64_t GetRem(crc_t* crc, msg_t* msg, uint64_t check);
+uint64_t EXPLORER_ENGINE(crc_t* crc, msg_t* msg, uint64_t check);
 
 
 /**

@@ -85,9 +85,9 @@ void main(int argc, char* argv[] )
     PROG.timing =     ca.timing     ? true : false;
     
     PROG.internal_engine = (!EXTERNAL_ENGINE_AVAILABLE || ca.use_internal_engine) ? true : false;
-    GetRem_ptr = PROG.internal_engine ? GetRemInternal : GetRem;
+    GetRem_ptr = PROG.internal_engine ? GetRemInternal : EXPLORER_ENGINE;
     if (PROG.internal_engine) PROG.engine_id = "Internal"; 
-    else PROG.engine_id = engine_id == NULL ? "Unknown" : engine_id;
+    else PROG.engine_id = XSTR(EXPLORER_ENGINE);
 
     // Check for a known command
     if (!ca.zoo && !ca.enc && !ca.validate && !ca.impl_test && !ca.perf_test) {
@@ -120,7 +120,7 @@ void main(int argc, char* argv[] )
     if (ca.perf_test) {
         // ImplPerf(crc, 0x40);
         // ImplPerf(crc, 0x1000);
-        ImplPerf(crc, 0x10000);
+        // ImplPerf(crc, 0x10000);
         ImplPerf(crc, 0x100000);
         ImplPerf(crc, 0x1000000);
         // ImplPerf(crc, 0x8000000);
@@ -152,8 +152,9 @@ void main(int argc, char* argv[] )
     if (ca.enc) {      
         // Prepare message 
         msg = PrepareMsg(crc, message);
+        #ifdef WIDE_CRC
         msg->w_validation_rem = NULL;    // For experimental wide crc support
-
+        #endif
        
         // Expected checksum value for testing checksum calculation. Essentially a custom check value.
         // If the message is "AB" an expected value is set matching the current CRC spec. 
@@ -175,8 +176,10 @@ void main(int argc, char* argv[] )
         }
         if (crc->n <= 64)
             printf("Checksum:\t%#llx\n", msg->rem);
+        #ifdef WIDE_CRC
         else
             printf("Checksum:\t%s\n", msg->w_rem);
+        #endif
         double elapsed = TIMING(timer_start, timer_end);
         if (ca.timing) printf("%d chars in %5.3f seconds, %5.3f MiB/s.\n", msg->len, elapsed, msg->len / elapsed / 0x100000);
 
@@ -257,7 +260,9 @@ void main(int argc, char* argv[] )
 
         // Prepare message 
         msg = PrepareMsg(crc, message);
+        #ifdef WIDE_CRC
         msg->w_validation_rem = checksumStr;    // For experimental wide crc support
+        #endif
 
          // Calculate remainder with engine pointed to, also start and stop timer
         timer_start = clock();

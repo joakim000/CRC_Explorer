@@ -29,7 +29,7 @@
 
 // Engine
 #include "engine.h"
-#ifdef CRC_EXPLORER_EXTERNAL
+#ifdef EXPLORER_ENGINE
 #define EXTERNAL_ENGINE_AVAILABLE true
 #else
 #define EXTERNAL_ENGINE_AVAILABLE false
