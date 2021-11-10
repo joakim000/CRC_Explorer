@@ -83,7 +83,7 @@ void LoadDef(crcdef_t zoo[], size_t index, crc_t* crc) {
         hexstr2bitsMSF(16, crc->w_g, crc->w_gBits, true);
         // printBits("      Poly converted", crc->w_gBits, COUNT_OF(crc->w_gBits), 0);
         if (crc->il1) crc->w_gBits[COUNT_OF(crc->w_gBits)-1-crc->n] = 1;
-        // printBits("         Poly il1:ed", crc->w_gBits, COUNT_OF(crc->w_gBits), 0);
+        // printBits("      Poly converted", crc->w_gBits, COUNT_OF(crc->w_gBits), 0);
 
         // If needed, convert direct init to non-direct
         if (!crc->nondirect && crc->w_init == 0) 
@@ -171,6 +171,7 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
 }
 
 void ZooTour(crcdef_t zoo[], size_t zoo_size) {
+    printf("\e[1;53m\e[1;1m\e[1;7mCRC Explorer\e[1;27m\e[1;23m\e[m\t\e[1;3mEngine ID:\e[m %s\n", PROG.engine_id);   
     printf("\e[1;3m\e[1;4m%5s %-18s %18s   %18s %4s %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value               ");
     // printf("\e[1;3m\e[1;4m%5s %-18s %18s %4s %19s %4s   %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "IL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value              "); // Med IL1
     for (int i = 0; i < zoo_size; i++) {
@@ -230,7 +231,7 @@ implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
     timer_end = clock();
 
     double elapsed = TIMING(timer_start, timer_end);
-    printf("  Encode: %10d chars in %6.3f seconds, %6.3f MiB/s.\n", perf->len, elapsed, perf->len / elapsed / 0x100000);
+    printf("  Encode:\t%10d chars in %6.3f seconds, %6.3f MiB/s.\n", perf->len, elapsed, perf->len / elapsed / 0x100000);
 
     // Validate
     #ifdef WIDE_CRC
@@ -243,7 +244,7 @@ implTest_t ImplPerf(crc_t* crc, uint64_t set_size) {
 
     test.passed_validate_msg = perf->rem == 0; 
     elapsed = TIMING(timer_start, timer_end);
-    printf("Validate: %10d chars in %6.3f seconds, %6.3f MiB/s. ", perf->len, elapsed, perf->len / elapsed / 0x100000);
+    printf("Validate:\t%10d chars in %6.3f seconds, %6.3f MiB/s. ", perf->len, elapsed, perf->len / elapsed / 0x100000);
     test.passed_validate_msg ? printf("\e[1;32mPassed.\e[m\n") : printf("\e[1;31mFailed.\e[m\n");
 
     // Free
@@ -291,7 +292,7 @@ uint64_t ValueCheckTest(crc_t* crc, uint8_t type, uint8_t output) {
         if (PROG.verbose) printf("ValueCheckTest. w_rem:%s  w_check:%s\n", test_msg->w_rem, crc->w_check);
         valid = ( (type == 0 && !strcmp(test_msg->w_rem, crc->w_check)) || (type != 0 && test_msg->rem == 0 ) ) ? true : false;
         if (output == 2)
-            printf("%s: ", PROG.engine_id);
+            printf("Engine id:\t%s\n", PROG.engine_id);
         // Print check value test result
         if (valid && output == 1) 
             printf("\e[1;32mPassed\e[m %s\n", crc->w_check);         // Show value

@@ -86,8 +86,8 @@ void main(int argc, char* argv[] )
     
     PROG.internal_engine = (!EXTERNAL_ENGINE_AVAILABLE || ca.use_internal_engine) ? true : false;
     GetRem_ptr = PROG.internal_engine ? GetRemInternal : GetRem;
-    if (PROG.internal_engine) PROG.engine_id = "Engine 0"; 
-    else PROG.engine_id = engine_id == NULL ? "Unknown engine" : engine_id;
+    if (PROG.internal_engine) PROG.engine_id = "Internal"; 
+    else PROG.engine_id = engine_id == NULL ? "Unknown" : engine_id;
 
     // Check for a known command
     if (!ca.zoo && !ca.enc && !ca.validate && !ca.impl_test && !ca.perf_test) {
@@ -169,7 +169,7 @@ void main(int argc, char* argv[] )
         // Printing 
         if (PRINTMSG) {
             if (msg->len < PRINTLIMIT)
-                printf("Message:\t%s\n", msg->msgStr);
+                printf("Message:\t|%s|\n", msg->msgStr);
             else
                 printf("Message:\t[%llu characters]\n", msg->len);
         }
