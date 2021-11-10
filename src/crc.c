@@ -556,7 +556,7 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
                     msg->msgBits[k] ^= gBits[j];
                 printf("   @%3d: ", i); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 36, i, gBits_size, space1, space2, 0);
             }
-            else if (PROG.prt_noskip) {  
+            else if (!PROG.prt_noskip) {  
                 if (!PROG.prt_nogen)
                     i2pc(gSkip, gBits_size, separator, newLines, 90, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9); // 9 is len of line-header of other lines
                 printf("Skip%3d: ", i); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 36, i, gBits_size, space1, space2, 0);
