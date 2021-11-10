@@ -4,7 +4,7 @@
 
 #ifdef EXPLORER_ENGINE
 
-#if EXPLORER_ENGINE_ID == 1   // Pontus_1
+#if EXPLORER_ENGINE_ID == 1  // Pontus 1
 #define LSB 1
 static uint64_t reflect(uint64_t input, int bits);
 
