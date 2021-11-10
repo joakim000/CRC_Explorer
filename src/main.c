@@ -1,8 +1,8 @@
 #include "crc.h"
-#include "jlibc/files.h"
-#include "jlibc/datagenerator.h"
-#include "jlibc/common.h"
-#include "assets/zoo.h"
+#include "../lib/jlibc/files.h"
+#include "../lib/jlibc/datagenerator.h"
+#include "../lib/jlibc/common.h"
+#include "../assets/zoo.h"
 
 void main(int argc, char* argv[] )
 {

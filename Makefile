@@ -3,6 +3,12 @@ $(info $(SHELL))
 
 .DELETE_ON_ERROR :
 
+SRC = src/
+BUILD = build/
+LIB = lib/
+JLIBC = $(LIB)jlibc/
+
+
 LFLAGS = 
 ifdef PROF
 CFLAGS = -std=c11 -O3 -pg -g
@@ -15,33 +21,33 @@ CFLAGS = -std=c11 -O3
 endif
 endif
 
-objects = main.o crc.o engine.o jlibc/binutils.o jlibc/cmdargs.o jlibc/common.o jlibc/datagenerator.o jlibc/files.o 
+objects = $(BUILD)main.o $(BUILD)crc.o $(BUILD)engine.o $(BUILD)binutils.o $(BUILD)cmdargs.o $(BUILD)common.o $(BUILD)datagenerator.o $(BUILD)files.o 
 
 
 extra : $(objects)
 	cc $(LFLAGS) -o crc $(objects)
 
 # Program
-main.o : main.c crc.h assets/zoo.h jlibc/common.h jlibc/binutils.h jlibc/cmdargs.h jlibc/datagenerator.h jlibc/files.h
-	cc -c $(CFLAGS) main.c
-crc.o : crc.c crc.h engine.h jlibc/common.h jlibc/binutils.h 
-	cc -c $(CFLAGS) crc.c
-engine.o : engine.c engine.h  
-	cc -c $(CFLAGS) engine.c
+$(BUILD)main.o : $(SRC)main.c assets/zoo.h 
+	cc -c $(CFLAGS) $(SRC)main.c -o $(@D)/main.o -I$(JLIBC) -I$(SRC)	
+$(BUILD)crc.o : $(SRC)crc.c
+	cc -c $(CFLAGS) $(SRC)crc.c -o $(@D)/crc.o -I$(JLIBC) -I$(SRC)
+$(BUILD)engine.o : $(SRC)engine.c   
+	cc -c $(CFLAGS) $(SRC)engine.c -o $(@D)/engine.o -I$(JLIBC) -I$(SRC)
 
 # jlibc
-binutils.o : jlibc/binutils.c jlibc/binutils.h jlibc/common.h  
-	cc -c $(CFLAGS) jlibc/binutils.c
-cmdargs.o : jlibc/cmdargs.c jlibc/cmdargs.h jlibc/common.h
-	cc -c $(CFLAGS) jlibc/cmdargs.c
-common.o : jlibc/common.c jlibc/common.h
-	cc -c $(CFLAGS) jlibc/common.c	
-#da.o :  jlibc/da.c jlibc/da.h jlibc/common.h
-#	cc -c $(CFLAGS) jlibc/da.c
-files.o : jlibc/files.c jlibc/files.h  jlibc/common.h 
-	cc -c $(CFLAGS) jlibc/files.c
-datagenerator.o : jlibc/datagenerator.c jlibc/datagenerator.h  jlibc/common.h 
-	cc -c $(CFLAGS) jlibc/datagenerator.c
+$(BUILD)binutils.o : $(JLIBC)/binutils.c 
+	cc -c $(CFLAGS) $(JLIBC)/binutils.c -o $(@D)/binutils.o -I$(JLIBC)
+$(BUILD)cmdargs.o : $(JLIBC)/cmdargs.c 
+	cc -c $(CFLAGS) $(JLIBC)/cmdargs.c -o $(@D)/cmdargs.o -I$(JLIBC)
+$(BUILD)common.o : $(JLIBC)/common.c 
+	cc -c $(CFLAGS) $(JLIBC)/common.c -o $(@D)/common.o -I$(JLIBC)
+#$(BUILD)da.o :  $(JLIBC)/da.c 
+#	cc -c $(CFLAGS) $(JLIBC)/da.c -o $(@D)/.o -I$(JLIBC)
+$(BUILD)files.o : $(JLIBC)/files.c 
+	cc -c $(CFLAGS) $(JLIBC)/files.c -o $(@D)/files.o -I$(JLIBC)
+$(BUILD)datagenerator.o : $(JLIBC)/datagenerator.c 
+	cc -c $(CFLAGS) $(JLIBC)/datagenerator.c -o $(@D)/datagenerator.o -I$(JLIBC)
 
 
 .PHONY : debug
@@ -54,20 +60,28 @@ prof :
 
 .PHONY : clean
 clean : 
-	$(info $(OS))
-#	ifeq ($(OS),Windows_NT)
-#	clean ::
-#		powershell rm *.exe 
-#		powershell rm *.o
-#		powershell rm jlibc/*.o
-#	else
-#	clean ::
-#		rm -rf crc
-		rm -f *.o jlibc/*.o
-#	endif
+	rm -f $(BUILD)*.o
 	
 .PHONY : winclean
-winclean : 
-#	powershell rm *.exe 
-	powershell rm *.o
-	powershell rm jlibc/*.o
+winclean :
+	powershell rm $(BUILD)*.o
+
+.PHONY : superclean
+superclean:
+	rm -f $(BUILD)*.o
+	rm -f crc
+	rm -f crc.exe
+
+#.PHONY : cleanportable
+#cleanportable : 
+#	$(info $(OS))
+#ifeq ("$(OS)","Windows_NT")
+#cleanportable ::
+#	powershell rm $(BUILD)*.o
+#else
+#cleanportable ::
+#	rm -f $(BUILD)*.o
+#endif
+
+
+# Notes

@@ -1,9 +1,9 @@
 
-#include "jlibc/binutils.h"
-#include "jlibc/cmdargs.h"
+#include "../lib/jlibc/binutils.h"
+#include "../lib/jlibc/cmdargs.h"
 // #define DA_TYPE uint8_t
-// #include "jlibc/da.h"
-#include "jlibc/datagenerator.h"
+// #include "../lib/jlibc/da.h"
+#include "../lib/jlibc/datagenerator.h"
 
 // #define MATCH_EXAMPLES
 #include "errors.h"
@@ -35,7 +35,7 @@
 #define EXTERNAL_ENGINE_AVAILABLE false
 #endif
 
-#include "jlibc/common.h"
+#include "../lib/jlibc/common.h"
 
 #define HELPTEXT1 "\
  \e[1;53m\e[1;1m\e[1;7mCRC Explorer\e[1;27m\e[1;23m                              \e[1;3mSail the seven seas of CRCs\e[m\n\

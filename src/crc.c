@@ -1,6 +1,6 @@
 #include "crc.h"
-#include "jlibc/binutils.h"
-#include "jlibc/common.h"
+#include "../lib/jlibc/binutils.h"
+#include "../lib/jlibc/common.h"
 
 // Data structures 
 prog_t* prog;
