@@ -1,5 +1,5 @@
 #ifndef EXPLORER_VERSION
-#define EXPLORER_VERSION "0.8"
+#define EXPLORER_VERSION "0.8.0"
 #endif
 
 #include "../lib/jlibc/binutils.h"
