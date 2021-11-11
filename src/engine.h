@@ -11,11 +11,22 @@
   The fields of each input struct is described below.     
 
 *********************************************************************/
-// Uncomment this to enable external engine
-// #define EXPLORER_ENGINE Pontus_1
-#define EXPLORER_ENGINE_ID 1
+/* Set the name of your CRC function here                           */
+// #define EXPLORER_ENGINE Another_CRC_Function
 
-// Experimental 
+/* This is to encapsulate any additional functions your main        */ 
+/* function needs to call, cf. example and template in engine.c     */  
+/* Can only be a number or a single character.                      */  
+// #define EXPLORER_ENGINE_ID 101
+
+// Example, kindly provided by Pontus Eriksson. Thanks Pontus!                      
+// #define EXPLORER_ENGINE Pontus_1
+// #define EXPLORER_ENGINE_ID 'P'
+
+/********************************************************************/
+
+
+// Experimental support for CRC widths > 64 bit 
 #define WIDE_CRC
 
 #include <stdint.h>

@@ -1,3 +1,6 @@
+#ifndef EXPLORER_VERSION
+#define EXPLORER_VERSION "0.8"
+#endif
 
 #include "../lib/jlibc/binutils.h"
 #include "../lib/jlibc/cmdargs.h"
@@ -13,6 +16,7 @@
 #define MAX_MESSAGE_READLENGTH 0x1000000    
 #define PRINTLIMIT 0x40
 #define MAX_HEXSTRING_LEN 35 // 32 chars + hex prefix + \0
+#define GROUPING 0
 
 // Utility
 #define TOWIDTH(x)  uint8_t x[crc->n]; bitSlice(COUNT_OF(crc->x) - crc->n, crc->n, &crc->x, 0, x);
@@ -38,7 +42,7 @@
 #include "../lib/jlibc/common.h"
 
 #define HELPTEXT1 "\
- \e[1;53m\e[1;1m\e[1;7mCRC Explorer\e[1;27m\e[1;23m                              \e[1;3mSail the seven seas of CRCs\e[m\n\
+ \e[1;53m\e[1;1m\e[1;7mCRC Explorer\e[1;27m\e[1;23m v%s                             \e[1;3mSail the seven seas of CRCs\e[m\n\
   \n\
  \e[1;4mCommands\e[m\n\
   zoo       Where all the CRCs live\n\
@@ -57,7 +61,7 @@
  \e[1;4mOptions\e[m\n\
   -steps   Print step-by-step calculations (with colours!)\n\
   -nogen   \e[1;3mWith steps:\e[m Don't print generator polynominal\n\
-  -noskip  \e[1;3mWith steps:\e[m Do print skipped steps (message bit is 0)\n\
+  -noskip  \e[1;3mWith steps:\e[m Don't print skipped steps (message bit is 0)\n\
 \n\
   -t       Timing: simple benchmark\n\
   -i       Internal: use internal engine with external present\n\

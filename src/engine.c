@@ -4,7 +4,16 @@
 
 #ifdef EXPLORER_ENGINE
 
-#if EXPLORER_ENGINE_ID == 1  // Pontus 1
+
+#if EXPLORER_ENGINE_ID == 101
+uint64_t Another_CRC_Function(crc_t* crc, msg_t* msg, uint64_t check) {
+
+    return 0;
+}
+#endif // EXPLORER_ENGINE_ID == 101
+
+
+#if EXPLORER_ENGINE_ID == 'P'  // Pontus_1
 #define LSB 1
 static uint64_t reflect(uint64_t input, int bits);
 
@@ -84,15 +93,7 @@ static uint64_t reflect(uint64_t input, int bits)
 
     return reflected;
 }
-#endif // EXPLORER_ENGINE_ID == 1
+#endif // EXPLORER_ENGINE_ID == P
 
 
-
-#if EXPLORER_ENGINE_ID == 2
-uint64_t Engine_2(crc_t* crc, msg_t* msg, uint64_t check) {
-
-    return 0;
-}
-#endif // EXPLORER_ENGINE_ID == 2
-
-#endif // #ifdef EXPLORER_ENGINE_ID
+#endif // #ifdef EXPLORER_ENGINE

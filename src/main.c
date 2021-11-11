@@ -26,7 +26,6 @@ void main(int argc, char* argv[] )
         .printMsg = PRINTMSG,
         .printSteps = PRINTSTEPS,
         .selfTest = SELFTEST,
-        .grouping = 8
     };
     prog = &new_prog;    
 
@@ -43,7 +42,7 @@ void main(int argc, char* argv[] )
     } ca;
     if (argc < 2 || checkArg(argc, argv, "help")) {
         // Print help if no args or help command
-        printf(HELPTEXT1, NULL);
+        printf(HELPTEXT1, EXPLORER_VERSION);
         exit(EXIT_SUCCESS);
     }
     argdef_t defs[] = {
@@ -122,7 +121,7 @@ void main(int argc, char* argv[] )
         // ImplPerf(crc, 0x40);
         // ImplPerf(crc, 0x1000);
         // ImplPerf(crc, 0x10000);
-        // ImplPerf(crc, 0x100000);
+        ImplPerf(crc, 0x100000);
         ImplPerf(crc, 0x1000000);
         // ImplPerf(crc, 0x4000000);
 
