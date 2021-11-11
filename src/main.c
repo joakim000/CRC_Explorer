@@ -26,6 +26,7 @@ void main(int argc, char* argv[] )
         .printMsg = PRINTMSG,
         .printSteps = PRINTSTEPS,
         .selfTest = SELFTEST,
+        .grouping = 8
     };
     prog = &new_prog;    
 
@@ -121,9 +122,9 @@ void main(int argc, char* argv[] )
         // ImplPerf(crc, 0x40);
         // ImplPerf(crc, 0x1000);
         // ImplPerf(crc, 0x10000);
-        ImplPerf(crc, 0x100000);
+        // ImplPerf(crc, 0x100000);
         ImplPerf(crc, 0x1000000);
-        // ImplPerf(crc, 0x8000000);
+        // ImplPerf(crc, 0x4000000);
 
         exit(EXIT_SUCCESS);
     }

@@ -71,13 +71,20 @@ void i2pc(void const * const ptr, size_t size, char separator, int newline, uint
     sprintf(colfmt_final, "\e[1;%dm%%d\e[m", col);
     
     // Leading spaces
-    char leadfmt[20];
+    char leadfmt[16];
     sprintf(leadfmt, "%%%ds", lead);
     printf(leadfmt, "");
 
+    uint8_t grouping = 0;
+    char spaceChar = grouping > 0 ? '|' : ' ';
+
+
     for EACH {
-        if (i == space1 || i == space2) printf(" ");
+        if (i == space1 || i == space2) printf("%c", spaceChar);
         // if (i == space1) printf("a");  if (i == space2)  printf("b");  // DEBUG
+
+        if (grouping)
+            if (i!=0 && i!=space1 && i!=space2 && i % grouping == 0) printf("%c", ' ');
 
         fmt_ptr       = (colStart <= i && i < (colStart + colLen)) ? colfmt : fmt;
         fmt_final_ptr = (colStart <= i && i < (colStart + colLen)) ? colfmt_final : fmt_final;

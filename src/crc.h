@@ -142,6 +142,7 @@ typedef struct prog_s {
     uint8_t timing;
     uint8_t internal_engine;
     uint8_t testMsg[9];
+    uint8_t grouping;
     char* engine_id;
 } prog_t;
 

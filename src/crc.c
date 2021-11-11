@@ -108,7 +108,7 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
         char prt_init[35] = " ";  
         char  prt_xor[35] = " ";  
         if (crc->n <= 64) {
-            sprintf(prt_g, "%#18llx", crc->g);
+            crc->il1 ? sprintf(prt_g, "%#18llx", crc->g) : sprintf(prt_g, "\e[1;3m\e[1;30m%#18llx\e[m", crc->g);
             if (crc->init) sprintf(prt_init, "%#18llx", crc->init);
             if (crc->xor) sprintf(prt_xor, "%#18llx", crc->xor);
         }
@@ -176,7 +176,7 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
 
 void ZooTour(crcdef_t zoo[], size_t zoo_size) {
     printf("\e[1;53m\e[1;1m\e[1;7mCRC Explorer\e[1;27m\e[1;23m\e[m\t\e[1;3mEngine:\e[m %s\n", PROG.engine_id);   
-    printf("\e[1;3m\e[1;4m%5s %-18s %18s   %18s %4s %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value               ");
+    printf("\e[1;3m\e[1;4m%5s %-18s %18s   %18s %4s  %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value               ");
     // printf("\e[1;3m\e[1;4m%5s %-18s %18s %4s %19s %4s   %18s %5s %6s  %6s\e[m\n", "Index", "Spec", "Poly", "IL1", "Init", "NDI", "XorOut", "RefIn", "RefOut", "Check value              "); // Med IL1
     for (int i = 0; i < zoo_size; i++) {
         crc_t zooItem;
@@ -544,23 +544,26 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
         }
         int32_t space1 = crc->init ? msg->initPad : -1; 
         int32_t space2 = crc->init ? msg->originalBitLen + msg->initPad  : msg->originalBitLen; 
-        int separator = 0; int newLines = 1;
+        int separator = 0; int newLines = 1; int groupLead = 0; int grouping = 0;
         // Content
         printf("\n Before: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 0, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
         // for (; i < REMLOOPEND; i++)                                   // Special accomodation, cf. error.h
-        for (int i = 0; i < msg->originalBitLen + msg->initPad; i++)    // Standard loop ending condition
+        for (int i = 0; i < msg->originalBitLen + msg->initPad; i++) {   // Standard loop ending condition
+            if (grouping)
+                if (i != 0 && i != space1 && i != space2 && i % grouping == 0) groupLead++;
             if (msg->msgBits[i]) {
                 if (!PROG.prt_nogen)
-                    i2pc(gBits, gBits_size, separator, newLines, 33, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9); // 9 is len of line-header of other lines
+                    i2pc(gBits, gBits_size, separator, newLines, 33, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9+groupLead); // 9 is len of line-header of other lines
                 for (int j = 0, k = i; j < gBits_size; j++, k++) 
                     msg->msgBits[k] ^= gBits[j];
                 printf("   @%3d: ", i); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 36, i, gBits_size, space1, space2, 0);
             }
             else if (!PROG.prt_noskip) {  
                 if (!PROG.prt_nogen)
-                    i2pc(gSkip, gBits_size, separator, newLines, 90, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9); // 9 is len of line-header of other lines
+                    i2pc(gSkip, gBits_size, separator, newLines, 90, 0, gBits_size, space1-i, (crc->init && i > msg->initPad) ? space2-i+1 : space2-i, i+9+groupLead); // 9 is len of line-header of other lines
                 printf("Skip%3d: ", i); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 36, i, gBits_size, space1, space2, 0);
-            }  
+            } 
+        } 
         printf("  After: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 37, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
     } 
     if (PROG.verbose) { puts("Message post calculation:"); i2p(msg->msgBits, msg->paddedBitLen, 0, 0, 1);  }
