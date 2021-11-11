@@ -58,7 +58,7 @@ The currently included validation test performs 3 steps:
 2. Error check standard input using library check value - should return 0.
 3. Error check modified standard input - should return a non-zero result.
 
-The currently included performance test measures clock cycles while encoding randomized 8-bit numbers in 64 kiB, 1 MiB and 16 MiB streams. Results in seconds and MiB/s.
+The currently included performance test measures clock cycles while encoding randomized printable characters in a 1 MiB and a 16 MiB stream. Results in seconds and MiB/s.
 
 #### Use of timing flag
 
@@ -68,15 +68,16 @@ to measure performance with real world data. Currently supports text files up to
 
 ## External engine API
 
-To test your CRC implemenation, 
-1. add it into the `engine.c` definition of `GetRem` and 
-2. `#define CRC_EXPLORER_EXTERNAL` in `engine.h`.
-
-`GetRem` returns a remainder value from a CRC definition and a message input, compare declaration below. 
+To test your CRC implemenation,
+1. Place your function in `engine.c` 
+2. In `engine.h`, define EXPLORER_ENGINE as your function, like so:
+     #define EXPLORER_ENGINE My_CRC_Function
+3. The function should return a remainder value from a CRC definition and a message input,
+   see the declaration below.
 
 When using this functionality, the command line option `-i` activates the internal engine for comparison.
 
-`engine.h` declaration of `GetRem`:
+`engine.h` declaration of `EXPLORER_ENGINE`:
 
 ~~~c
 /**
@@ -110,7 +111,7 @@ When using this functionality, the command line option `-i` activates the intern
 *                        is done, but before result reflection (if any). 
 *
 */
-uint64_t GetRem(crc_t* crc, msg_t* msg, uint64_t check);
+uint64_t EXPLORER_ENGINE(crc_t* crc, msg_t* msg, uint64_t check);
 ~~~
 
 
