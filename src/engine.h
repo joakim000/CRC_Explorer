@@ -148,7 +148,7 @@ typedef struct msg_s {
 
     // Optional details
     uint8_t* msgBits;         
-    size_t originalBitLen;     
+    size_t msgBitLen;     
     size_t paddedBitLen;  
     size_t initPad;   
 

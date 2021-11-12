@@ -12,8 +12,8 @@
 
 #if defined(MATCH_EXAMPLES)
 #define SPECIALWIDTH crc->n + 1             // Overpad by 1 bit
-#define REMLOOPEND msgSize - crc->n    // Allow processing to continue after message end, 1 step / overpadding bit.
+#define REMLOOPEND msg->paddedBitLen - crc->n    // Allow processing to continue after message end, 1 step / overpadding bit.
 #else
 #define SPECIALWIDTH crc->n                 // Normal padding
-#define REMLOOPEND originalMsgSize       // Always stop processing at message end. This mitigates errors from overpadding.
+#define REMLOOPEND msg->msgBitLen + msg->initPad       // Always stop processing at message end. This mitigates errors from overpadding.
 #endif

@@ -347,13 +347,13 @@ msg_t* PrepareMsg(crc_t* crc, char* message) {
         // int8_t augmentPad = crc->init && !crc->nondirect ? 0 : crc->n;   // Wrong way to apply init
         int8_t augmentPad = crc->n;
 
-        r->msgStr = message;
-        r->len = strlen(message);
-        r->initPad = initPad;
-        r->originalBitLen = strlen(message) * sizeof(uint8_t) * BITSINBYTE;
-        // r->.paddedBitLen =   strlen(message) * sizeof(uint8_t) * BITSINBYTE + SPECIALWIDTH + initPad,     // Special
-        r->paddedBitLen =   strlen(message) * sizeof(uint8_t) * BITSINBYTE + augmentPad + initPad;               // Normal
-        if (PROG.verbose) printf("originalBitlen:%d  paddedBitlen:%d  ", r->originalBitLen, r->paddedBitLen);
+        r->msgStr =         message;
+        r->len =            strlen(message);
+        r->initPad =        initPad;
+        r->msgBitLen =      strlen(message) * sizeof(uint8_t) * BITSINBYTE;
+        r->paddedBitLen =   strlen(message) * sizeof(uint8_t) * BITSINBYTE + SPECIALWIDTH + initPad;                // Special
+        // r->paddedBitLen =   strlen(message) * sizeof(uint8_t) * BITSINBYTE + augmentPad + initPad;               // Normal
+        if (PROG.verbose) printf("msgBitLen:%d  paddedBitlen:%d  ", r->msgBitLen, r->paddedBitLen);
         return r;
 }
 
@@ -402,7 +402,7 @@ void ArrangeMsg(crc_t* crc, msg_t* msg) {
      
      // Arrange message bits and pad
     if ( crc->inputLSF )
-        ints2bitsLSF(strlen(msg->msgStr), sizeof(uint8_t), (msg->msgStr), msg->msgBits, SPECIALWIDTH, msg->initPad);  // Special accomodation, cf. error.h
+        ints2bitsLSF(strlen(msg->msgStr), sizeof(uint8_t), (msg->msgStr), msg->msgBits, SPECIALWIDTH, msg->initPad);         // Special accomodation, cf. error.h
         // ints2bitsLSF(strlen(msg->msgStr), sizeof(uint8_t), (msg->msgStr), msg->msgBits, crc->n, crc->initBits);           // Normal
     else
         ints2bitsMSF(strlen(msg->msgStr), sizeof(uint8_t), (msg->msgStr), msg->msgBits, crc->n, msg->initPad); 
@@ -523,8 +523,8 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
     #endif
     if (!PROG.printSteps) {
     // Poly division 
-        for (int i = 0; i < msg->originalBitLen + msg->initPad; i++)  // Standard loop ending condition
-        // for (int i = 0; i < REMLOOPEND; i++)                       // Special accomodation, cf. error.h
+        // for (int i = 0; i < msg->msgBitLen + msg->initPad; i++)      // Normal loop ending condition. Using msgBitLen+initPad instead of paddedBitLen-n mitigates padding errors.
+        for (int i = 0; i < REMLOOPEND; i++)                          // Special accomodation, cf. error.h
             if (msg->msgBits[i]) 
                 for (int j = 0, k = i; j < gBits_size; j++, k++) 
                     msg->msgBits[k] ^= gBits[j];
@@ -535,20 +535,20 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
         char fmt[0x40];
         uint8_t gSkip[gBits_size]; for I2(gBits_size) gSkip[i] = 0;
         if (crc->init) {
-            sprintf(fmt, "         \e[1;1m\e[1;3m%%%ds %%%ds %%%ds\e[m", msg->initPad, msg->originalBitLen, crc->n);
+            sprintf(fmt, "         \e[1;1m\e[1;3m%%%ds %%%ds %%%ds\e[m", msg->initPad, msg->msgBitLen, crc->n);
             printf(fmt, "Init", "Message", "Padding");
         }
         else {
-            sprintf(fmt, "         \e[1;1m\e[1;3m%%%ds %%%ds\e[m", msg->originalBitLen, crc->n);
+            sprintf(fmt, "         \e[1;1m\e[1;3m%%%ds %%%ds\e[m", msg->msgBitLen, crc->n);
             printf(fmt, "Message", "Padding");
         }
         int32_t space1 = crc->init ? msg->initPad : -1; 
-        int32_t space2 = crc->init ? msg->originalBitLen + msg->initPad  : msg->originalBitLen; 
+        int32_t space2 = crc->init ? msg->msgBitLen + msg->initPad  : msg->msgBitLen; 
         int separator = 0; int newLines = 1; int groupLead = 0; int grouping = 0;
         // Content
-        printf("\n Before: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 0, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
-        // for (; i < REMLOOPEND; i++)                                   // Special accomodation, cf. error.h
-        for (int i = 0; i < msg->originalBitLen + msg->initPad; i++) {   // Standard loop ending condition
+        printf("\n Before: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 0, msg->msgBitLen+msg->initPad, crc->n, space1, space2, 0); 
+        for (int i = 0; i < REMLOOPEND; i++) {                                 // Special accomodation, cf. error.h
+        // for (int i = 0; i < msg->msgBitLen + msg->initPad; i++) {             // Normal loop ending condition
             if (grouping)
                 if (i != 0 && i != space1 && i != space2 && i % grouping == 0) groupLead++;
             if (msg->msgBits[i]) {
@@ -564,7 +564,7 @@ uint64_t PolyDivision(crc_t* crc, msg_t* msg) {
                 printf("Skip%3d: ", i); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 36, i, gBits_size, space1, space2, 0);
             } 
         } 
-        printf("  After: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 37, msg->originalBitLen+msg->initPad, crc->n, space1, space2, 0); 
+        printf("  After: "); i2pc(msg->msgBits, msg->paddedBitLen, separator, newLines, 37, msg->msgBitLen+msg->initPad, crc->n, space1, space2, 0); 
     } 
     if (PROG.verbose) { puts("Message post calculation:"); i2p(msg->msgBits, msg->paddedBitLen, 0, 0, 1);  }
 
