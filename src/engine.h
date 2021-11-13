@@ -23,6 +23,9 @@
 // #define EXPLORER_ENGINE Pontus_1
 // #define EXPLORER_ENGINE_ID 'P'
 
+#define EXPLORER_ENGINE Pontus_1S
+#define EXPLORER_ENGINE_ID 'S'
+
 /********************************************************************/
 
 
