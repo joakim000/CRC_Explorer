@@ -150,6 +150,10 @@ void main(int argc, char* argv[] )
 
     // Command: Encode
     if (ca.enc) {      
+        
+        /* Test boris */
+        // sprintf(message, "%c%c%c%c", 146, 238, 171, '\0');
+
         // Prepare message 
         msg = PrepareMsg(crc, message);
         #ifdef WIDE_CRC
@@ -161,6 +165,7 @@ void main(int argc, char* argv[] )
         // Or set a custom value.  Check is skipped when set to 0. 
         msg->expected = strcmp(msg->msgStr, "AB") ? 0 : crc->checkAB; 
         // msg->expected = 
+
 
         // Calculate remainder with engine pointed to, also start and stop timer
         timer_start = clock();
