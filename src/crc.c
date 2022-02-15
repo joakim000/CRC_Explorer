@@ -145,12 +145,13 @@ void LoadDefWrapper(crcdef_t zoo[], size_t index, crc_t* crc, bool table) {
             strcpy(prt_xor, crc->w_xor);
         }
         #endif
-        char* prt_nondirect = crc->nondirect ? "Yes" : "No"; 
+        char* prt_nondirect = crc->nondirect ? "Yes" : "No";    
         char* prt_il1 = crc->il1 ? "Yes" : "No"; 
         char* prt_refIn = crc->inputLSF ? "Yes" : "No"; 
         char* prt_refOut = crc->resultLSF ? "Yes" : "No"; 
         printf("\e[1;53m\e[1;7m%s\e[1;27m   ", crc->description);
-        printf("Poly:%s   IL1:%s   Init:%s   NDI:%s   ",  prt_g, prt_il1, prt_init, prt_nondirect);
+        // printf("Poly:%s   IL1:%s   Init:%s   NDI:%s   ",  prt_g, prt_il1, prt_init, prt_nondirect);  // With IL1
+        printf("Poly:\e[1;33m%s\e[m   Init:%s   NDI:%s   ",  prt_g, prt_init, prt_nondirect);  // Color 33 for poly
         printf("XorOut:%s   RefIn:%s   RefOut:%s   \e[m\n", prt_xor, prt_refIn, prt_refOut);
     }    
 
