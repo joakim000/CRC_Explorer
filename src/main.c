@@ -86,8 +86,15 @@ void main(int argc, char* argv[] )
     
     PROG.internal_engine = (!EXTERNAL_ENGINE_AVAILABLE || ca.use_internal_engine) ? true : false;
     GetRem_ptr = PROG.internal_engine ? GetRemInternal : EXPLORER_ENGINE;
-    if (PROG.internal_engine) PROG.engine_id = "Internal"; 
-    else PROG.engine_id = XSTR(EXPLORER_ENGINE);
+    if (PROG.internal_engine) {
+        #if defined(MATCH_EXAMPLES)
+        PROG.engine_id = "Internal (matching assignment examples)";
+        #else
+        PROG.engine_id = "Internal";
+        #endif 
+    } 
+    else 
+        PROG.engine_id = XSTR(EXPLORER_ENGINE);
 
     // Check for a known command
     if (!ca.zoo && !ca.enc && !ca.validate && !ca.impl_test && !ca.perf_test) {
